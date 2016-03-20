@@ -10,6 +10,10 @@
 #include "TopExp_Explorer.hxx"
 #include "Handle_TopoDS_TEdge.hxx"
 #include "BRepMesh_IncrementalMesh.hxx"
+#include "Bnd_Box.hxx"
+#include "BRepBndLib.hxx"
+#include "Standard_Real.hxx"
+#include <cmath>
 
 using namespace std;
 
@@ -69,8 +73,70 @@ list<TopoDS_Edge> TargetSurface::slice(
   {
     BRepMesh_IncrementalMesh(face,tol);
   }
+
+  Bnd_Box boundingBox;
+  boundingBox.SetGap(0.0);
+  BRepBndLib::Add(face,boundingBox);
+  Standard_Real x0,y0,z0,x1,y1,z1;
+  boundingBox.Get(x0,y0,z0,x1,y1,z1);
+
+  x0 -= boundingBoxPadding;
+  x1 += boundingBoxPadding;
+  y0 -= boundingBoxPadding;
+  y1 += boundingBoxPadding;
+  z0 -= boundingBoxPadding;
+  z1 += boundingBoxPadding;
+
   gp_Pnt pnt(0,0,0);
-  gp_Vec vdelta(dir.XYZ());
-  int n = 10;
+
+  if (dir.X() <= 0)
+  {pnt.SetX(x1);}
+  else
+  {pnt.SetX(x0);}
+
+  if (dir.Y() <=0)
+  {pnt.SetY(y1);}
+  else
+  {pnt.SetY(y0);}
+
+  if (dir.Z() <= 0)
+  {pnt.SetZ(z1);}
+  else
+  {pnt.SetZ(z0);}
+
+  gp_Vec vx(x1-x0,0,0);
+  gp_Vec vy(0,y1-y0,0);
+  gp_Vec vz(0,0,z1-z0);
+
+  gp_Vec nx(1,0,0);
+  gp_Vec ny(0,1,0);
+  gp_Vec nz(0,0,1);
+
+  gp_Vec dirVec(dir.XYZ());
+
+  double dotx = abs(vx.Dot(dirVec));
+  double doty = abs(vy.Dot(dirVec));
+  double dotz = abs(vz.Dot(dirVec));
+
+  gp_Vec vdelta = dirVec.Multiplied(spacing);
+
+  int n;
+  double dot;
+  if ((dotx >= doty)&(dotx >= dotz)) 
+  {
+    dot = nx.Dot(vdelta);
+    n = abs(int(ceil((x1-x0)/dot)));
+  }
+  else if ((doty >= dotx)&(doty >= dotz))
+  {
+    dot = ny.Dot(vdelta);
+    n = abs(int(ceil((y1-y0)/dot)));
+  }
+  else
+  {
+    dot = nz.Dot(vdelta);
+    n = abs(int(ceil((z1-z0)/dot)));
+  }
+
   return intersectWithPlanes(pnt,dir,vdelta,n);
 }
