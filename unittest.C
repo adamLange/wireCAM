@@ -23,6 +23,10 @@ TEST(TargetSurface, ConstructFromFace) {
   TargetSurface surf(face);
 }
 
+TEST(TargetSurface, ConstructFromSTEP) {
+  TargetSurface surf("single_surface.STEP");
+}
+
 class TargetSurfaceMemberFunctionTest : public ::testing::Test{
 protected:
   virtual void SetUp(){

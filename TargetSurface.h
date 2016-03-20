@@ -16,7 +16,7 @@ class TargetSurface
 public:
 
   TargetSurface();
-  //TargetSurface(const std::string &filepath);
+  TargetSurface(const Standard_CString &filepath);
   TargetSurface(TopoDS_Face &face);
 
   std::list<TopoDS_Edge> intersectWithPlane(

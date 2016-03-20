@@ -14,6 +14,9 @@
 #include "BRepBndLib.hxx"
 #include "Standard_Real.hxx"
 #include <cmath>
+#include "STEPControl_Reader.hxx"
+#include "IFSelect_ReturnStatus.hxx"
+#include "Standard_CString.hxx"
 
 using namespace std;
 
@@ -25,6 +28,34 @@ TargetSurface::TargetSurface() :
 TargetSurface::TargetSurface(TopoDS_Face &faceIn) :
   face(faceIn)
 {
+}
+
+TargetSurface::TargetSurface(const Standard_CString& filepath)
+{
+  STEPControl_Reader reader;
+  IFSelect_ReturnStatus status;
+  status = reader.ReadFile(filepath);
+  TopoDS_Shape shape;
+  if (status == IFSelect_RetDone)
+  {
+    bool failsonly = false;
+    reader.PrintCheckLoad(failsonly, IFSelect_ItemsByEntity);
+    reader.PrintCheckTransfer(failsonly, IFSelect_ItemsByEntity);
+    bool ok = reader.TransferRoot(1);
+    int nbs = reader.NbShapes();
+    shape = reader.Shape(1);
+  }
+  else
+  {
+    cout<<"Failed to read file"<<endl;
+  }
+  TopExp_Explorer exp;
+  list<TopoDS_Face> faces;
+  for (exp.Init(shape,TopAbs_FACE); exp.More(); exp.Next()) {
+    TopoDS_Face face = TopoDS::Face(exp.Current());
+    faces.push_back(face);
+  }
+  face = faces.front();
 }
 
 list<TopoDS_Edge> TargetSurface::intersectWithPlane(const gp_Pnt &pnt, const gp_Dir &dir)
