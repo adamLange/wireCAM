@@ -17,6 +17,8 @@
 #include "STEPControl_Reader.hxx"
 #include "IFSelect_ReturnStatus.hxx"
 #include "Standard_CString.hxx"
+#include <exception>
+#include <stdexcept>
 
 using namespace std;
 
@@ -47,7 +49,8 @@ TargetSurface::TargetSurface(const Standard_CString& filepath)
   }
   else
   {
-    cout<<"Failed to read file"<<endl;
+    throw runtime_error("Failed to read file");
+    //cout<<"Failed to read file"<<endl;
   }
   TopExp_Explorer exp;
   list<TopoDS_Face> faces;
