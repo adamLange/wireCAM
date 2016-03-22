@@ -35,12 +35,10 @@ void Slice::performBaseTessilation(list<double>& params,
   BRep_Tool bt;
   Handle(Poly_Polygon3D) ply = bt.Polygon3D(edge,tl);
 
-  /*
   if (ply.IsNull())
   {
     throw runtime_error("empty polygon data!");
   }
-  */
 
   const TColgp_Array1OfPnt& nodesArr = ply->Nodes();
   const TColStd_Array1OfReal& parametersArr = ply->Parameters();
