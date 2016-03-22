@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS})
 ADD_SUBDIRECTORY(/home/adam/googletest/googletest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 
 ADD_LIBRARY(TargetSurface TargetSurface.C)
+ADD_LIBRARY(Slice Slice.C)
 ADD_EXECUTABLE(test unittest.C)
 
 get_target_property(TEST_LOCATION test LOCATION)
@@ -18,5 +19,5 @@ FOREACH(STEP_FILE ${STEP_FILES})
     COMMAND ${CMAKE_COMMAND} -E copy ${STEP_FILE} ${TEST_DIRECTORY})
 ENDFOREACH()
 
-TARGET_LINK_LIBRARIES (test gtest gtest_main ${OCE_LIBRARIES} TargetSurface)
+TARGET_LINK_LIBRARIES (test gtest gtest_main ${OCE_LIBRARIES} TargetSurface Slice)
 add_dependencies(test test_step_files)

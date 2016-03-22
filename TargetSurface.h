@@ -39,7 +39,6 @@ public:
     const bool& performIncMesh=true
   );
 
-private:
   TopoDS_Face face;
 };
 
