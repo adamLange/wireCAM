@@ -15,6 +15,8 @@ public:
       const bool performNow=true, const double baseTol=0.05
     );
 
+  //list<Slice> split(const Splitter splitter);
+
   TopoDS_Edge edge;
   TopoDS_Face face;
   list<double> params;

@@ -85,7 +85,7 @@ list<TopoDS_Edge> TargetSurface::intersectWithPlanes(
 {
   gp_Vec v_base(pnt.XYZ());
   list<TopoDS_Edge> edges;
-  for (int i = 0; i<n; i++) {
+  for (int i = 0; i<n; ++i){
     gp_Pnt pnt_i((v_base + vec.Multiplied(i)).XYZ());
     list<TopoDS_Edge> newEdges;
     newEdges = intersectWithPlane(pnt_i,dir);
