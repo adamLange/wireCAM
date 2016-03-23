@@ -6,10 +6,12 @@ INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS})
 
 ADD_SUBDIRECTORY(/home/adam/googletest/googletest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 
-ADD_LIBRARY(TargetSurface TargetSurface.C)
-ADD_LIBRARY(Slice Slice.C)
+#ADD_LIBRARY(TargetSurface TargetSurface.C)
+#ADD_LIBRARY(Slice Slice.C)
+ADD_LIBRARY(LIBWIRECAM TargetSurface.C Slice.C SurfaceNormalSplitter.C)
 ADD_EXECUTABLE(test unittest.C)
 
+# copy geometry files for test
 get_target_property(TEST_LOCATION test LOCATION)
 get_filename_component(TEST_DIRECTORY ${TEST_LOCATION} DIRECTORY CACHE)
 ADD_CUSTOM_TARGET(test_step_files)
@@ -19,5 +21,7 @@ FOREACH(STEP_FILE ${STEP_FILES})
     COMMAND ${CMAKE_COMMAND} -E copy ${STEP_FILE} ${TEST_DIRECTORY})
 ENDFOREACH()
 
-TARGET_LINK_LIBRARIES (test gtest gtest_main ${OCE_LIBRARIES} TargetSurface Slice)
+TARGET_LINK_LIBRARIES (test gtest gtest_main ${OCE_LIBRARIES} LIBWIRECAM)
 add_dependencies(test test_step_files)
+
+set(CMAKE_CXX_FLAGS -std=c++11)

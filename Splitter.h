@@ -1,6 +1,9 @@
 #ifndef SPLITTER_H
 #define SPLITTER_H
 
+#include "gp_Vec.hxx"
+#include "gp_Pnt.hxx"
+
 class Splitter{
 public:
 

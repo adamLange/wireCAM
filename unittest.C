@@ -10,6 +10,7 @@
 #include "TopoDS_Face.hxx"
 #include "TargetSurface.h"
 #include "Slice.h"
+#include "SurfaceNormalSplitter.h"
 
 using namespace std;
 
@@ -84,6 +85,36 @@ TEST(Slice,construct){
   list<gp_Pnt> pts = mySlice.points;
   list<gp_Vec> normals = mySlice.normals;
   list<double> alphas = mySlice.alphas;
+}
+
+class SliceOperations : public ::testing::Test{
+protected:
+  virtual void SetUp()
+  {
+    TargetSurface tgtsurf("single_surface.STEP");
+    gp_Dir dir(1,1,0);
+    list<TopoDS_Edge> edges = tgtsurf.slice(dir,5);
+    for (list<TopoDS_Edge>::iterator edge_it = edges.begin();
+         edge_it != edges.end();
+         ++edge_it
+        )
+    {
+      slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+    }
+  }
+  list<Slice> slices;
+};
+
+TEST_F(SliceOperations,SurfaceNormalSplitter){
+  SurfaceNormalSplitter sns;
+  sns.setZLimits(0,1.1);
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->split(sns);
+  }
 }
 
 int main(int argc, char **argv) {
