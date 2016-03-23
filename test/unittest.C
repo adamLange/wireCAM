@@ -11,6 +11,8 @@
 #include "TargetSurface.h"
 #include "Slice.h"
 #include "SurfaceNormalSplitter.h"
+#include "TraverseAngleSplitter.h"
+#include "WorkingBoxSplitter.h"
 
 using namespace std;
 
@@ -117,6 +119,28 @@ TEST_F(SliceOperations,SurfaceNormalSplitter){
   }
 }
 
+TEST_F(SliceOperations,TraverseAngleSplitter){
+  TraverseAngleSplitter sns;
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->split(sns);
+  }
+}
+
+TEST_F(SliceOperations,WorkingBoxSplitter){
+  WorkingBoxSplitter sns;
+  sns.setWorkingBox(400,-500,-200,1000,500,200);
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->split(sns);
+  }
+}
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

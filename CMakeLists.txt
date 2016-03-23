@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 2.8)
 project("WireCAM")
 
 FIND_PACKAGE(OCE REQUIRED)
-INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS} ./include)
 
 ADD_SUBDIRECTORY(/home/adam/googletest/googletest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 
 #ADD_LIBRARY(TargetSurface TargetSurface.C)
 #ADD_LIBRARY(Slice Slice.C)
-ADD_LIBRARY(LIBWIRECAM TargetSurface.C Slice.C SurfaceNormalSplitter.C)
-ADD_EXECUTABLE(test unittest.C)
+file(GLOB WIRECAMSRC src/*C)
+ADD_LIBRARY(LIBWIRECAM ${WIRECAMSRC})
+ADD_EXECUTABLE(test test/unittest.C)
 
 # copy geometry files for test
 get_target_property(TEST_LOCATION test LOCATION)
