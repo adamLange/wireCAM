@@ -104,3 +104,66 @@ void Slice::calc(const list<double>& params,
     alphas.push_back(alpha);
   }
 }
+
+list<Slice>
+Slice::split(Splitter& splitter)
+{
+  list<Slice> newSlices;
+  Slice activeSlice(edge,face,false);
+  list<double>::iterator it_params = params.begin();
+  list<gp_Pnt>::iterator it_points = points.begin();
+  list<gp_Vec>::iterator it_normals = normals.begin();
+  list<double>::iterator it_alphas = alphas.begin();
+  
+  bool valid = splitter.evaluate(*it_params,*it_points,
+      *it_normals,*it_alphas);
+  bool validOld;
+  if (valid)
+  {
+    activeSlice.params.push_back(*it_params);
+    activeSlice.points.push_back(*it_points);
+    activeSlice.normals.push_back(*it_normals);
+    activeSlice.alphas.push_back(*it_alphas);
+  }
+  ++it_params;
+  ++it_points;
+  ++it_normals;
+  ++it_alphas;
+  for (;it_params != params.end();
+       ++it_params,
+       ++it_points,
+       ++it_normals,
+       ++it_alphas
+      )
+  {
+    validOld = valid;
+    valid = splitter.evaluate(*it_params,*it_points,
+      *it_normals,*it_alphas);
+    if (validOld == valid) {
+      if (valid)
+      {
+        activeSlice.params.push_back(*it_params);
+        activeSlice.points.push_back(*it_points);
+        activeSlice.normals.push_back(*it_normals);
+        activeSlice.alphas.push_back(*it_alphas);
+      }
+      continue;
+    }
+    else
+    {
+      if(!validOld) //beginning of a slice
+      {
+        activeSlice.params.push_back(*it_params);
+        activeSlice.points.push_back(*it_points);
+        activeSlice.normals.push_back(*it_normals);
+        activeSlice.alphas.push_back(*it_alphas);
+      }
+      else //end of a slice
+      {
+        newSlices.push_back(activeSlice);
+        activeSlice = Slice(edge,face,false);
+      }
+    }
+  }
+  return newSlices;
+}
