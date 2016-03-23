@@ -1,12 +1,13 @@
-#ifndef SLICE_H
-#define SLICE_H
+#ifndef WIRECAMSLICE_H
+#define WIRECAMSLICE_H
 
 #include "TopoDS_Face.hxx"
 #include "TopoDS_Edge.hxx"
 #include "gp_Pnt.hxx"
 #include <list>
-#include "Splitter.h"
-using namespace std;
+//using namespace std;
+
+class Splitter;
 
 class Slice
 {
@@ -16,28 +17,28 @@ public:
       const bool performNow=true, const double baseTol=0.05
     );
 
-  list<Slice> split(Splitter& splitter);
+  std::list<Slice> split(Splitter& splitter);
 
   TopoDS_Edge edge;
   TopoDS_Face face;
-  list<double> params;
-  list<gp_Pnt> points;
-  list<gp_Vec> normals;
-  list<double> alphas;
+  std::list<double> params;
+  std::list<gp_Pnt> points;
+  std::list<gp_Vec> normals;
+  std::list<double> alphas;
 
 private:
 
-  void performBaseTessilation(list<double>& params,
-      list<gp_Pnt>& points);
+  void performBaseTessilation(std::list<double>& params,
+      std::list<gp_Pnt>& points);
 
-  void calc(const list<double>& params,
-      list<gp_Pnt>& points,
-      list<gp_Vec>& normals,
-      list<double>& alphas
+  void calc(const std::list<double>& params,
+      std::list<gp_Pnt>& points,
+      std::list<gp_Vec>& normals,
+      std::list<double>& alphas
     );
-  //void calc(const list<double>& params, const list<gp_Pnt>& points);
+  //void calc(const std::list<double>& params, const std::list<gp_Pnt>& points);
 
   double baseTol;
 };
 
-#endif//SLICE_H
+#endif//WIRECAMSLICE_H

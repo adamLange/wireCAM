@@ -10,7 +10,7 @@ public:
   SurfaceNormalSplitter();
 
   virtual bool
-  evaluate(const double& param, const gp_Pnt& point,
+  evaluate(const Slice& slice, const double& param, const gp_Pnt& point,
                        const gp_Vec& normal, const double& alpha);
 
   void setXLimits(const double& xMin,const double& xMax);

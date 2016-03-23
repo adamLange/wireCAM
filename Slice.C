@@ -1,4 +1,5 @@
 #include "Slice.h"
+#include "Splitter.h"
 #include <list>
 #include <cmath>
 #include "gp_Pnt.hxx"
@@ -115,7 +116,7 @@ Slice::split(Splitter& splitter)
   list<gp_Vec>::iterator it_normals = normals.begin();
   list<double>::iterator it_alphas = alphas.begin();
   
-  bool valid = splitter.evaluate(*it_params,*it_points,
+  bool valid = splitter.evaluate(*this,*it_params,*it_points,
       *it_normals,*it_alphas);
   bool validOld;
   if (valid)
@@ -137,7 +138,7 @@ Slice::split(Splitter& splitter)
       )
   {
     validOld = valid;
-    valid = splitter.evaluate(*it_params,*it_points,
+    valid = splitter.evaluate(*this,*it_params,*it_points,
       *it_normals,*it_alphas);
     if (validOld == valid) {
       if (valid)

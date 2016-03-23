@@ -28,8 +28,11 @@ SurfaceNormalSplitter::setZLimits(const double& zMin,const double& zMax)
 }
 
 bool
-SurfaceNormalSplitter::evaluate(const double& param, const gp_Pnt& point,
-                       const gp_Vec& normal, const double& alpha)
+SurfaceNormalSplitter::evaluate(
+    const Slice& slice,
+    const double& param, const gp_Pnt& point,
+    const gp_Vec& normal, const double& alpha
+  )
 {
   double x = normal.X();
   double y = normal.Y();
