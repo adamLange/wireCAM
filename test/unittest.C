@@ -15,6 +15,7 @@
 #include "WorkingBoxSplitter.h"
 #include "PointToPointDistanceMarker.h"
 #include "AlphaJumpMarker.h"
+#include "NormalCrossingHorizontalMarker.h"
 #define _USE_MATH_DEFINES
 
 using namespace std;
@@ -160,6 +161,18 @@ TEST_F(SliceOperations,PointToPointDistanceMarker){
 TEST_F(SliceOperations,AlphaJumpMarker){
   AlphaJumpMarker m;
   m.setMaxAlphaJump(M_PI/100);
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->refine(m);
+  }
+}
+
+TEST_F(SliceOperations,NormalCrossingHorizontalMarker){
+  NormalCrossingHorizontalMarker m;
+  m.setMaxDz(0.05);
   for (list<Slice>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
