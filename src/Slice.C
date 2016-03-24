@@ -168,3 +168,69 @@ Slice::split(Splitter& splitter)
   }
   return newSlices;
 }
+
+void
+Slice::refine(Marker& marker)
+{
+  list<double>::iterator params_tail = params.begin();
+  list<double>::iterator params_head = params.begin();
+  ++params_head;
+  list<gp_Pnt>::iterator points_tail = points.begin();
+  list<gp_Pnt>::iterator points_head = points.begin();
+  ++points_head;
+  list<gp_Vec>::iterator normals_tail = normals.begin();
+  list<gp_Vec>::iterator normals_head = normals.begin();
+  ++normals_head;
+  list<double>::iterator alphas_tail = alphas.begin();
+  list<double>::iterator alphas_head = alphas.begin();
+  ++alphas_head;
+  
+  bool done = false;
+  bool converged = false;
+  while (!done)
+  {
+    while(!converged)
+    {
+      converged = marker.evaluate(
+        this,
+        *params_head,*points_head,*normals_head,*alphas_head,
+        *params_tail,*points_tail,*normals_tail,*alphas_tail
+      );
+      if (!converged)
+      {
+        //add a point in the middle
+        //move the head back to it
+        list<double> newParams;
+        newParams.push_back((*params_head+*params_tail)/2.);
+        list<gp_Pnt> newPoints;
+        list<gp_Vec> newNormals;
+        list<double> newAlphas;
+        calc(newParams,newPoints,newNormals,newAlphas);
+        params.splice(params_head,newParams);
+        points.splice(points_head,newPoints);
+        normals.splice(normals_head,newNormals);
+        alphas.splice(alphas_head,newAlphas);
+        --params_head;
+        --points_head;
+        --normals_head;
+        --alphas_head;
+      }
+    }
+    if (params_head == params.end())
+    {
+      done = true;
+    }
+    else
+    {
+      ++params_head;
+      ++points_head;
+      ++normals_head;
+      ++alphas_head;
+      ++params_tail;
+      ++points_tail;
+      ++normals_tail;
+      ++alphas_tail;
+    }
+    converged = false;
+  }
+}

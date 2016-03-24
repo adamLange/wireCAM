@@ -8,6 +8,7 @@
 //using namespace std;
 
 class Splitter;
+class Marker;
 
 class Slice
 {
@@ -18,6 +19,7 @@ public:
     );
 
   std::list<Slice> split(Splitter& splitter);
+  void refine(Marker& marker);
 
   TopoDS_Edge edge;
   TopoDS_Face face;
