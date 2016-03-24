@@ -14,6 +14,8 @@
 #include "TraverseAngleSplitter.h"
 #include "WorkingBoxSplitter.h"
 #include "PointToPointDistanceMarker.h"
+#include "AlphaJumpMarker.h"
+#define _USE_MATH_DEFINES
 
 using namespace std;
 
@@ -146,6 +148,18 @@ TEST_F(SliceOperations,WorkingBoxSplitter){
 TEST_F(SliceOperations,PointToPointDistanceMarker){
   PointToPointDistanceMarker m;
   m.setMaxDistance(4);
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->refine(m);
+  }
+}
+
+TEST_F(SliceOperations,AlphaJumpMarker){
+  AlphaJumpMarker m;
+  m.setMaxAlphaJump(M_PI/100);
   for (list<Slice>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
