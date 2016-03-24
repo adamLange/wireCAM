@@ -15,6 +15,9 @@
 #include "TopoDS_Vertex.hxx"
 #include "BRepExtrema_ExtPF.hxx"
 #include "BRepBuilderAPI_MakeVertex.hxx"
+#include "Marker.h"
+
+#include <iostream>
 
 using namespace std;
 
@@ -185,14 +188,14 @@ Slice::refine(Marker& marker)
   list<double>::iterator alphas_head = alphas.begin();
   ++alphas_head;
   
-  bool done = false;
   bool converged = false;
-  while (!done)
+  while(params_head != params.end())
   {
     while(!converged)
     {
-      converged = marker.evaluate(
-        this,
+      //cout<<"  parameters "<<*params_tail<<" -> "<<*params_head<<endl;
+      converged = !marker.evaluate(
+        *this,
         *params_head,*points_head,*normals_head,*alphas_head,
         *params_tail,*points_tail,*normals_tail,*alphas_tail
       );
@@ -216,21 +219,15 @@ Slice::refine(Marker& marker)
         --alphas_head;
       }
     }
-    if (params_head == params.end())
-    {
-      done = true;
-    }
-    else
-    {
-      ++params_head;
-      ++points_head;
-      ++normals_head;
-      ++alphas_head;
-      ++params_tail;
-      ++points_tail;
-      ++normals_tail;
-      ++alphas_tail;
-    }
+    
+    ++params_head;
+    ++points_head;
+    ++normals_head;
+    ++alphas_head;
+    ++params_tail;
+    ++points_tail;
+    ++normals_tail;
+    ++alphas_tail;
     converged = false;
   }
 }

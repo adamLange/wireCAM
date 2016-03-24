@@ -13,6 +13,7 @@
 #include "SurfaceNormalSplitter.h"
 #include "TraverseAngleSplitter.h"
 #include "WorkingBoxSplitter.h"
+#include "PointToPointDistanceMarker.h"
 
 using namespace std;
 
@@ -141,6 +142,19 @@ TEST_F(SliceOperations,WorkingBoxSplitter){
     slice_it->split(sns);
   }
 }
+
+TEST_F(SliceOperations,PointToPointDistanceMarker){
+  PointToPointDistanceMarker m;
+  m.setMaxDistance(4);
+  for (list<Slice>::iterator slice_it = slices.begin();
+       slice_it != slices.end();
+       ++slice_it
+      )
+  {
+    slice_it->refine(m);
+  }
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
