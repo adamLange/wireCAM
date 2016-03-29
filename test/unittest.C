@@ -16,6 +16,7 @@
 #include "PointToPointDistanceMarker.h"
 #include "AlphaJumpMarker.h"
 #include "NormalCrossingHorizontalMarker.h"
+#include "PostProcessor.h"
 #define _USE_MATH_DEFINES
 
 using namespace std;
@@ -180,6 +181,23 @@ TEST_F(SliceOperations,NormalCrossingHorizontalMarker){
   {
     slice_it->refine(m);
   }
+}
+
+TEST(PostProcessor,postProcess){
+  TargetSurface tgtsurf("single_surface.STEP");
+  gp_Dir dir(1,1,0);
+  list<Slice> slices;
+  list<TopoDS_Edge> edges = tgtsurf.slice(dir,5);
+  for (list<TopoDS_Edge>::iterator edge_it = edges.begin();
+       edge_it != edges.end();
+       ++edge_it
+      )
+  {
+    slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+  }
+
+  PostProcessor pp(50,1/25.4,180/M_PI);
+  cout<<pp.postProcess(slices);
 }
 
 int main(int argc, char **argv) {
