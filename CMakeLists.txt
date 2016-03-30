@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 project("WireCAM")
 
 FIND_PACKAGE(OCE REQUIRED)
-INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS} ./include)
+INCLUDE_DIRECTORIES(${OCE_INCLUDE_DIRS} ./include contrib/jsoncpp/include)
 
 ADD_SUBDIRECTORY(/home/adam/googletest/googletest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 
-#ADD_LIBRARY(TargetSurface TargetSurface.C)
-#ADD_LIBRARY(Slice Slice.C)
-file(GLOB WIRECAMSRC src/*C)
+file(GLOB WIRECAMSRC src/*C contrib/*/src/*cpp)
 ADD_LIBRARY(LIBWIRECAM ${WIRECAMSRC})
 ADD_EXECUTABLE(test test/unittest.C)
 
