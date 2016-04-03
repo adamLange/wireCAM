@@ -23,5 +23,5 @@ NormalCrossingHorizontalMarker::evaluate(
 {
   double z1 = normalHead.Z();
   double z2 = normalTail.Z();
-  return (z1*z2 < 0) && (abs(z2-z1)>maxDz);
+  return (z1*z2 < 0) && (std::abs(z2-z1)>maxDz);
 }
