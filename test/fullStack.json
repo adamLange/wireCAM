@@ -8,12 +8,12 @@
   ],
   "operations":[
     {"class":"WorkingBoxSplitter",
-     "xMin":-400,
-     "yMin":-450,
-     "zMin":14,
-     "xMax":400,
-     "yMax":700,
-     "zMax":300
+     "xMin":-4000,
+     "yMin":-4500,
+     "zMin":-100,
+     "xMax":4000,
+     "yMax":7000,
+     "zMax":3000
     },
     {"class":"NormalCrossingHorizontalMarker",
      "maxDz":0.01
@@ -38,5 +38,9 @@
     {"class":"bogus",
      "flavor":"cheddar"
     }
-  ]
+  ],
+  "postProcessor":{
+    "linearScale":1,
+    "angularScale":1
+  }
 }
