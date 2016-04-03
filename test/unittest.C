@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include <list>
+#include <memory>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include "gp_Pnt.hxx"
 #include "gp_Dir.hxx"
@@ -17,6 +18,11 @@
 #include "AlphaJumpMarker.h"
 #include "NormalCrossingHorizontalMarker.h"
 #include "PostProcessor.h"
+#include "Marker.h"
+#include "SplitterFactory.h"
+#include "json/json.h"
+#include "TemplateEngine.h"
+#include <sstream>
 #define _USE_MATH_DEFINES
 
 using namespace std;
@@ -198,6 +204,84 @@ TEST(PostProcessor,postProcess){
 
   PostProcessor pp(50,1/25.4,180/M_PI);
   cout<<pp.postProcess(slices);
+}
+
+TEST(FullStack,wingToGCode){
+  TargetSurface tgtsurf("single_surface.STEP");
+  gp_Dir dir(1,1,0);
+  list<Slice> slices;
+  list<TopoDS_Edge> edges = tgtsurf.slice(dir,5);
+  for (list<TopoDS_Edge>::iterator edge_it = edges.begin();
+       edge_it != edges.end();
+       ++edge_it
+      )
+  {
+    slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+  }
+
+  /*
+  list<unique_ptr<Splitter>> splitters;
+
+  unique_ptr<Splitter> sns(new SurfaceNormalSplitter);
+  sns->setZLimits(0,1.1);
+  splitters.push_back(sns);
+
+  TraverseAngleSplitter tas;
+  splitters.push_back(&tas);
+
+  WorkingBoxSplitter wbs;
+  wbs.setWorkingBox(400,-500,-200,1000,500,200);
+  splitters.push_back(&wbs);
+
+  list<Marker*> markers;
+  PointToPointDistanceMarker p2pdm;
+  p2pdm.setMaxDistance(2);
+  markers.push_back(&p2pdm);
+
+  AlphaJumpMarker ajm;
+  ajm.setMaxAlphaJump(M_PI/100);
+  markers.push_back(&ajm);
+
+  NormalCrossingHorizontalMarker nchm;
+  nchm.setMaxDz(0.05);
+  markers.push_back(&nchm);
+
+  for (list<Splitter>::iterator splitter = splitters.begin();
+         splitter != splitters.end();
+         ++splitter
+      )
+  {
+    list<Slice> newSlices;
+    for (list<Slice>::iterator slice_it = slices.begin();
+         slice_it != slices.end();
+         ++slice_it
+      )
+    {
+      newSlices.splice(newSlices.end(),slice_it->split(**splitter));
+    }
+  }
+
+  */
+  PostProcessor pp(10,1/25.4,180/M_PI);
+  cout<<pp.postProcess(slices);
+
+}
+
+TEST(JSONCPP,ParseJson){
+  ifstream in("fullStack.json");
+  Json::Value book_json;
+  in >> book_json;
+  in.close();
+}
+
+TEST(TEMPLATEENGINE,DOIT){
+  ifstream in("./fullStack.json");
+  stringstream raw;
+  raw << in.rdbuf();
+  //cout << raw.str() <<endl;
+  in.close();
+  TemplateEngine engine(raw.str());
+  cout << engine.run();
 }
 
 int main(int argc, char **argv) {

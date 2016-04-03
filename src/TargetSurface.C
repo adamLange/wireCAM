@@ -32,11 +32,11 @@ TargetSurface::TargetSurface(TopoDS_Face &faceIn) :
 {
 }
 
-TargetSurface::TargetSurface(const Standard_CString& filepath)
+TargetSurface::TargetSurface(const string& filepath)
 {
   STEPControl_Reader reader;
   IFSelect_ReturnStatus status;
-  status = reader.ReadFile(filepath);
+  status = reader.ReadFile(filepath.c_str());
   TopoDS_Shape shape;
   if (status == IFSelect_RetDone)
   {
