@@ -15,6 +15,7 @@
 #include "TopoDS_Vertex.hxx"
 #include "BRepExtrema_ExtPF.hxx"
 #include "BRepBuilderAPI_MakeVertex.hxx"
+#include "BRepBuilderAPI_MakeEdge.hxx"
 #include "Marker.h"
 
 #include <iostream>
@@ -164,13 +165,33 @@ Slice::split(Splitter& splitter)
       }
       else //end of a slice
       {
-        newSlices.push_back(activeSlice);
+        if (activeSlice.params.size() >1){
+          double p0,p1;
+          BRep_Tool bt;
+          Handle_Geom_Curve curve = bt.Curve(activeSlice.edge,p0,p1);
+          p0 = activeSlice.params.front();
+          p1 = activeSlice.params.back();
+          BRepBuilderAPI_MakeEdge me(curve,p0,p1);
+          if (me.IsDone()){
+            activeSlice.edge = me.Edge();
+          }
+          newSlices.push_back(activeSlice);
+        }
         activeSlice = Slice(edge,face,false);
       }
     }
   }
-  if (activeSlice.params.size() > 0)
+  if (activeSlice.params.size() > 1)
   {
+    double p0,p1;
+    BRep_Tool bt;
+    Handle_Geom_Curve curve = bt.Curve(activeSlice.edge,p0,p1);
+    p0 = activeSlice.params.front();
+    p1 = activeSlice.params.back();
+    BRepBuilderAPI_MakeEdge me(curve,p0,p1);
+    if (me.IsDone()){
+      activeSlice.edge = me.Edge();
+    }
     newSlices.push_back(activeSlice);
   }
   return newSlices;
