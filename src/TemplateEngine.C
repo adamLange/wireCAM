@@ -12,6 +12,10 @@
 #include <list>
 #include <iostream>
 #include "TopoDS_Edge.hxx"
+#include "TopoDS_Compound.hxx"
+#include "BRepTools.hxx"
+#include "BRep_Tool.hxx"
+#include "BRep_Builder.hxx"
 #include "PostProcessor.h"
 #define _USE_MATH_DEFINES
 
@@ -184,8 +188,34 @@ TemplateEngine::run()
     
   }
 
-  PostProcessor pp(1.9*25.4,1/25.4,180/M_PI);
-  std::string str = pp.postProcess(slices);
-  str += "poof\n";
-  return str;
+  double lScale = root["postProcessor"]["linearScale"].asFloat();
+  double aScale = root["postProcessor"]["angularScale"].asFloat();
+  double rapidZ = root["postProcessor"]["rapidZ"].asFloat();
+
+  PostProcessor pp(rapidZ,lScale,aScale);
+
+  string gcodeFile = root["output"]["machineCode"].asString();
+  
+  ofstream outFile(gcodeFile);
+  //std::string str = pp.postProcess(slices);
+  outFile << pp.postProcess(slices);
+  outFile.close();
+
+  TopoDS_Compound outShape;
+  BRep_Builder builder;
+  builder.MakeCompound(outShape);
+  builder.Add(outShape,surf.face);
+  for (std::list<Slice>::iterator slice_it = slices.begin();
+         slice_it != slices.end();
+         ++slice_it)
+  {
+    builder.Add(outShape,slice_it->edge);
+  }
+  
+  string geomFileName = root["output"]["geometry"].asString();
+  ofstream geomFile(geomFileName);
+  BRepTools bt;
+  bt.Write(outShape,geomFile);
+
+  return "poof";
 }

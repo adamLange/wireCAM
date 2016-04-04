@@ -40,7 +40,12 @@
     }
   ],
   "postProcessor":{
-    "linearScale":1,
-    "angularScale":1
+    "linearScale":0.0393700787,
+    "angularScale":57.295779513,
+    "rapidZ":48.26
+  },
+  "output":{
+    "geometry":"./out.brep",
+    "machineCode":"./out.nc"
   }
 }
