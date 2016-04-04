@@ -22,11 +22,15 @@ WorkingBoxSplitter::evaluate(const Slice& slice,
     const gp_Vec& normal, const double& alpha
   )
 {
-  if (infinite) {return true;}
-  return ( point.X() >= minX ) &&
-         ( point.X() <= maxX ) &&
-         ( point.Y() >= minY ) &&
-         ( point.Y() <= maxY ) &&
-         ( point.Z() >= minZ ) &&
-         ( point.Z() <= maxZ );
+  bool rval;
+  if (infinite) {rval = true;}
+  else {
+    rval = ( point.X() >= minX ) &&
+           ( point.X() <= maxX ) &&
+           ( point.Y() >= minY ) &&
+           ( point.Y() <= maxY ) &&
+           ( point.Z() >= minZ ) &&
+           ( point.Z() <= maxZ );
+  }
+  return rval;
 }

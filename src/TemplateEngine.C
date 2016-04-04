@@ -43,6 +43,8 @@ TemplateEngine::run()
     edges.splice(edges.end(),surf.slice(dir,step));
   }
 
+  std::cout<< "Creating slices..." << std::endl;
+
   std::list<Slice> slices;
   for (std::list<TopoDS_Edge>::iterator edge_it = edges.begin();
        edge_it != edges.end();
@@ -51,6 +53,9 @@ TemplateEngine::run()
     slices.emplace(slices.end(),*edge_it,surf.face);
   }
 
+  std::cout<<"  "<<slices.size()<<" slices created"<< std::endl;
+
+  std::cout<<"Applying slice modification operations..."<<std::endl;
   for (Json::ValueIterator it = root["operations"].begin();
        it != root["operations"].end();
        ++it)
@@ -60,7 +65,7 @@ TemplateEngine::run()
     if (opType == "WorkingBoxSplitter")
     {
       std::list<Slice> newSlices;
-      std::cout<<"wbs"<<std::endl;
+      std::cout<<"  WorkingBoxSplitter"<< std::endl;
       WorkingBoxSplitter wbs;
       double x0 = (*it)["xMin"].asFloat();
       double y0 = (*it)["yMin"].asFloat();
@@ -73,26 +78,32 @@ TemplateEngine::run()
            slice_it != slices.end();
            ++slice_it)
       {
-        newSlices.splice(newSlices.end(),slice_it->split(wbs));
+        std::list<Slice> dbgSlices = slice_it->split(wbs);
+        newSlices.splice(newSlices.end(),dbgSlices);
       }
+      int initSize = slices.size();
       slices = newSlices;
+      std::cout<<"    "<<initSize<<"->"<<slices.size()<<" slices"<< std::endl;
     }
 
     else if (opType == "NormalCrossingHorizontalMarker")
     {
-      std::cout<<"nchm"<<std::endl;
+      std::cout<<"  NormalCrossingHorizontalMarker"<<std::endl;
       NormalCrossingHorizontalMarker nchm;
       nchm.setMaxDz((*it)["maxDz"].asFloat());
       for (std::list<Slice>::iterator slice_it = slices.begin();
            slice_it != slices.end();
            ++slice_it)
       {
+        long initSize = slice_it->params.size();
         slice_it->refine(nchm);
+        long finalSize = slice_it->params.size();
+        std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
       }
     }
     else if (opType == "SurfaceNormalSplitter")
     {
-      std::cout<<"sns"<<std::endl;
+      std::cout<<"  SurfaceNormalSplitter"<<std::endl;
       SurfaceNormalSplitter sns;
       std::list<Slice> newSlices;
       double x0 = (*it)["xMin"].asFloat();
@@ -110,11 +121,14 @@ TemplateEngine::run()
       {
         newSlices.splice(newSlices.end(),slice_it->split(sns));
       }
+      int size_i = slices.size();
       slices = newSlices;
+      int size_f = slices.size();
+      std::cout<<"    "<<size_i<<" -> "<<size_f<<std::endl;
     }
     else if (opType == "TraverseAngleSplitter")
     {
-      std::cout<<"tas"<<std::endl;
+      std::cout<<"  TraverseAngleSplitter"<<std::endl;
       std::list<Slice> newSlices;
       TraverseAngleSplitter tas;
       double alpha = (*it)["maxTraverseAngle"].asFloat()*M_PI/180.0;
@@ -125,11 +139,14 @@ TemplateEngine::run()
       {
         newSlices.splice(newSlices.end(),slice_it->split(tas));
       }
+      int size_i = slices.size();
       slices = newSlices;
+      int size_f = slices.size();
+      std::cout<<"    "<<size_i<<" -> "<<size_f<<std::endl;
     }
     else if (opType == "AlphaJumpMarker")
     {
-      std::cout<<"ajm"<<std::endl;
+      std::cout<<"  AlphaJumpMarker"<<std::endl;
       AlphaJumpMarker ajm;
       double j = (*it)["maxAlphaJump"].asFloat()*M_PI/180.0;
       ajm.setMaxAlphaJump(j);
@@ -137,12 +154,15 @@ TemplateEngine::run()
            slice_it != slices.end();
            ++slice_it)
       {
+        long initSize = slice_it->params.size();
         slice_it->refine(ajm);
+        long finalSize = slice_it->params.size();
+        std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
       }
     }
     else if (opType == "PointToPointDistanceMarker")
     {
-      std::cout<<"p2pdm"<<std::endl;
+      std::cout<<"  PointToPointDistanceMarker"<<std::endl;
       PointToPointDistanceMarker p2pdm;
       double d = (*it)["maxDistance"].asFloat();
       p2pdm.setMaxDistance(d);
@@ -150,7 +170,10 @@ TemplateEngine::run()
            slice_it != slices.end();
            ++slice_it)
       {
+        long initSize = slice_it->params.size();
         slice_it->refine(p2pdm);
+        long finalSize = slice_it->params.size();
+        std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
       }
     }
     else
@@ -161,7 +184,7 @@ TemplateEngine::run()
     
   }
 
-  PostProcessor pp(10,1/25.4,180/M_PI);
+  PostProcessor pp(1.9*25.4,1/25.4,180/M_PI);
   std::string str = pp.postProcess(slices);
   str += "poof\n";
   return str;

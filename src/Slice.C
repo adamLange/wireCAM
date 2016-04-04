@@ -169,6 +169,10 @@ Slice::split(Splitter& splitter)
       }
     }
   }
+  if (activeSlice.params.size() > 0)
+  {
+    newSlices.push_back(activeSlice);
+  }
   return newSlices;
 }
 

@@ -29,23 +29,23 @@ string PostProcessor::postProcess(list<Slice>& s)
     list<gp_Vec>::iterator it_normals = sliceIt->normals.begin();
     list<double>::iterator it_alphas = sliceIt->alphas.begin();
 
-    gcode << "G0 X" << it_points->X()*lScale << " "
-             << "Y" << it_points->Y()*lScale << " "
-             << "Z" << rapidZ*lScale << " "
-             << "A" << *it_alphas*aScale
+    gcode << "G0 X" << fixed << it_points->X()*lScale << " "
+             << "Y" << fixed << it_points->Y()*lScale << " "
+             << "Z" << fixed << rapidZ*lScale << " "
+             << "A" << fixed << *it_alphas*aScale
              << endl;
     for (;it_params != sliceIt->params.end();
          ++it_params,++it_points,++it_normals,++it_alphas)
     {
 
-       gcode << "G1 X" << it_points->X()*lScale << " "
-           << "Y" << it_points->Y()*lScale << " "
-           << "Z" << it_points->Z()*lScale << " "
-           << "A" << *it_alphas*aScale << " "
-           << "F" << 20
+       gcode << "G1 X" << fixed << it_points->X()*lScale << " "
+           << "Y" << fixed << it_points->Y()*lScale << " "
+           << "Z" << fixed << it_points->Z()*lScale << " "
+           << "A" << fixed << *it_alphas*aScale << " "
+           << "F" << fixed << 20
            << endl;
     }
-    gcode << "G0 Z" << rapidZ*lScale << endl;
+    gcode << "G0 Z" << fixed << rapidZ*lScale << endl;
     
   }
   return gcode.str();

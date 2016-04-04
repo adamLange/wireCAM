@@ -8,15 +8,15 @@
   ],
   "operations":[
     {"class":"WorkingBoxSplitter",
-     "xMin":-4000,
-     "yMin":-4500,
-     "zMin":-100,
-     "xMax":4000,
-     "yMax":7000,
-     "zMax":3000
+     "xMin":-400,
+     "yMin":500,
+     "zMin":12.7,
+     "xMax":400,
+     "yMax":700,
+     "zMax":300
     },
     {"class":"NormalCrossingHorizontalMarker",
-     "maxDz":0.01
+     "maxDz":0.001
     },
     {"class":"SurfaceNormalSplitter",
      "xMin":-1.1,

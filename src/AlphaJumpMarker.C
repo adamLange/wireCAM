@@ -21,5 +21,5 @@ AlphaJumpMarker::evaluate(Slice& slice,
     gp_Vec& normalTail, double& alphaTail
   ) 
 {
-  return abs(alphaHead - alphaTail) > maxAlphaJump;
+  return std::abs(alphaHead - alphaTail) > maxAlphaJump;
 }
