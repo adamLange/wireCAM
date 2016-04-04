@@ -9,6 +9,7 @@ ADD_SUBDIRECTORY(/home/adam/googletest/googletest ${CMAKE_CURRENT_BINARY_DIR}/gt
 file(GLOB WIRECAMSRC src/*C contrib/*/src/*cpp)
 ADD_LIBRARY(LIBWIRECAM ${WIRECAMSRC})
 ADD_EXECUTABLE(test test/unittest.C)
+ADD_EXECUTABLE(wireCAM src/wireCAM.C)
 
 # copy geometry files for test
 get_target_property(TEST_LOCATION test LOCATION)
@@ -22,5 +23,7 @@ ENDFOREACH()
 
 TARGET_LINK_LIBRARIES (test gtest gtest_main ${OCE_LIBRARIES} LIBWIRECAM)
 add_dependencies(test test_step_files)
+
+TARGET_LINK_LIBRARIES(wireCAM LIBWIRECAM ${OCE_LIBRARIES})
 
 set(CMAKE_CXX_FLAGS -std=c++11)

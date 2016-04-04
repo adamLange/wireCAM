@@ -4,19 +4,24 @@
   "slices":[
     {"dir":[1,0,0],"step":8},
     {"dir":[0,1,0],"step":8},
-    {"dir":[1,1,0],"step":8}
+    {"dir":[1,1,0],"step":8},
+    {"dir":[1,-1,0],"step":8}
+    //{"dir":[-0.1,1,0],"step":8}
   ],
   "operations":[
-    {"class":"WorkingBoxSplitter",
-     "xMin":-400,
-     "yMin":500,
-     "zMin":12.7,
-     "xMax":400,
-     "yMax":700,
-     "zMax":300
+    {"class":"PointToPointDistanceMarker",
+     "maxDistance":5
     },
     {"class":"NormalCrossingHorizontalMarker",
      "maxDz":0.001
+    },
+    {"class":"WorkingBoxSplitter",
+     "xMin":-400,
+     "yMin":0,//500,
+     "zMin":-50,//12.7,
+     "xMax":400,
+     "yMax":700,
+     "zMax":300
     },
     {"class":"SurfaceNormalSplitter",
      "xMin":-1.1,
@@ -26,14 +31,11 @@
      "yMax":1.1,
      "zMax":1.1
     },
-    {"class":"TraverseAngleSplitter",
-     "maxTraverseAngle":45
-    },
     {"class":"AlphaJumpMarker",
      "maxAlphaJump":2
     },
-    {"class":"PointToPointDistanceMarker",
-     "maxDistance":5
+    {"class":"TraverseAngleSplitter",
+     "maxTraverseAngle":50
     },
     {"class":"bogus",
      "flavor":"cheddar"

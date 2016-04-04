@@ -10,7 +10,7 @@ public:
 
 TemplateEngine(const std::string& input);
 
-std::string run();
+void run();
 
 private:
 Json::Value root;

@@ -281,7 +281,7 @@ TEST(TEMPLATEENGINE,DOIT){
   //cout << raw.str() <<endl;
   in.close();
   TemplateEngine engine(raw.str());
-  cout << engine.run();
+  engine.run();
 }
 
 int main(int argc, char **argv) {

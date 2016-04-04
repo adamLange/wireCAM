@@ -25,7 +25,7 @@ TemplateEngine::TemplateEngine(const std::string& input)
   reader.parse(input,root);
 }
 
-std::string
+void
 TemplateEngine::run()
 {
   //std::cout<<root["file"]<<std::endl;
@@ -217,5 +217,5 @@ TemplateEngine::run()
   BRepTools bt;
   bt.Write(outShape,geomFile);
 
-  return "poof";
+  return;
 }
