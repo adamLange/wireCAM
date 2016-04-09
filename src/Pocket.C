@@ -81,7 +81,7 @@ Pocket::calculate()
        resulted in other that one wire!");
   }
 
-  PathTree pathTree(wires.front(),offset,true);
+  pathTree.calculate(wires.front(),offset,true);
 
   return;
 }

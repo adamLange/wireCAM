@@ -59,6 +59,7 @@ PathTree::dumpWires()
   TopoDS_Compound comp;
   TopoDS_Builder builder;
   builder.MakeCompound(comp);
+  builder.Add(comp,wire);
   
   std::list<TopoDS_Wire> wires;
   wires.push_back(wire);
