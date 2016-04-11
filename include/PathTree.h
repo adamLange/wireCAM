@@ -7,6 +7,8 @@
 #include <list>
 #include "Standard_Transient.hxx"
 
+class Slice;
+
 class PathTree
 {
 
@@ -23,7 +25,9 @@ private:
   bool isOuter;
   std::list<PathTree> children;
   //Handle(TopoDS_TWire) wire;
-  TopoDS_Wire wire;
+  TopoDS_Wire wire,outerWire;
+  std::list<Slice> slices;
+  double cornerATol;
 
 };
 

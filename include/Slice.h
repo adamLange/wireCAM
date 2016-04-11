@@ -33,7 +33,7 @@ private:
   void performBaseTessilation(std::list<double>& params,
       std::list<gp_Pnt>& points);
 
-  void calc(const std::list<double>& params,
+  virtual void calc(const std::list<double>& params,
       std::list<gp_Pnt>& points,
       std::list<gp_Vec>& normals,
       std::list<double>& alphas
