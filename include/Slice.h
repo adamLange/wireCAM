@@ -6,6 +6,7 @@
 #include "gp_Pnt.hxx"
 #include <list>
 #include <memory>
+#include <utility>
 //using namespace std;
 
 class Splitter;
@@ -16,7 +17,6 @@ class Slice
 public:
 
   Slice();
-
   std::list<std::unique_ptr<Slice>> split(Splitter& splitter);
 
   void refine(Marker& marker);
@@ -29,7 +29,10 @@ public:
 
 private:
 
-  virtual void emptyCopy(std::unique_ptr<Slice>& ptr);
+  virtual Slice* emptyCopy();
+  virtual void updateGeometry();
+  void calc(const std::list<double> params, std::list<gp_Pnt> points,
+    std::list<double> alphas);
 
 };
 

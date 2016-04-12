@@ -17,25 +17,27 @@
 #include "Marker.h"
 
 #include <iostream>
+#include <utility>
 
 using namespace std;
 
-Slice::Slice():
+Slice::Slice()
 {
 }
 
-Slice::emptyCopy(unique_ptr<Slice>& ptr)
+Slice*
+Slice::emptyCopy()
 {
-  ptr = new Slice;
-  return;
+  return new Slice;
 }
 
 list<unique_ptr<Slice>>
 Slice::split(Splitter& splitter)
 {
   list<unique_ptr<Slice>> newSlices;
+  //unique_ptr<Slice> activeSlice(emptyCopy());
   unique_ptr<Slice> activeSlice;
-  emptyCopy(activeSlice);
+  activeSlice.reset(emptyCopy());
   list<double>::iterator it_params = params.begin();
   list<gp_Pnt>::iterator it_points = points.begin();
   list<double>::iterator it_alphas = alphas.begin();
@@ -83,16 +85,16 @@ Slice::split(Splitter& splitter)
         if (activeSlice->params.size() >1)
         {
           activeSlice->updateGeometry();
-          newSlices.push_back(activeSlice);
+          newSlices.push_back(move(activeSlice));
         }
-        activeSlice = T(this);
+        activeSlice.reset(emptyCopy());
       }
     }
   }
   if (activeSlice->params.size() > 1)
   {
     activeSlice->updateGeometry();
-    newSlices.push_back(activeSlice);
+    newSlices.push_back(move(activeSlice));
   }
   return newSlices;
 }
@@ -128,9 +130,8 @@ Slice::refine(Marker& marker)
         list<double> newParams;
         newParams.push_back((*params_head+*params_tail)/2.);
         list<gp_Pnt> newPoints;
-        list<gp_Vec> newNormals;
         list<double> newAlphas;
-        calc(newParams,newPoints,newNormals,newAlphas);
+        calc(newParams,newPoints,newAlphas);
         params.splice(params_head,newParams);
         points.splice(points_head,newPoints);
         alphas.splice(alphas_head,newAlphas);
@@ -147,5 +148,25 @@ Slice::refine(Marker& marker)
     ++points_tail;
     ++alphas_tail;
     converged = false;
+  }
+}
+
+void
+Slice::updateGeometry()
+{
+}
+
+void
+Slice::calc(const list<double> params, list<gp_Pnt> points,
+  list<double> alphas)
+{
+  points.clear();
+  alphas.clear();
+  for (list<double>::const_iterator it = params.begin();
+       it != params.end();
+       ++it)
+  {
+    points.push_back(gp_Pnt(0,0,0));
+    alphas.push_back(0.);
   }
 }
