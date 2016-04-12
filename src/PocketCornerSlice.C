@@ -12,20 +12,22 @@
 #include "IntTools_FClass2d.hxx"
 
 #include "BRepBuilderAPI_MakeFace.hxx"
-#include "BRepAdaptorSurface.hxx"
+#include "BRepAdaptor_Surface.hxx"
 #include "Extrema_ExtPS.hxx"
 #include "TopAbs_State.hxx"
 
+#include "Standard_Transient.hxx"
+
 #include <exception>
-#include <math>
+#include <cmath>
 #define _USE_MATH_DEFINES
 
 
 PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0,
     const double& alpha1,TopoDS_Wire& outerWire,const double& toolR
   ):
-  this->pivotPnt(pivotPnt),
-  this->outerWire(outerWire),
+  pivotPnt(pivotPnt),
+  outerWire(outerWire),
   r(toolR)
 {
   cc = new BRepAdaptor_CompCurve(this->outerWire);
