@@ -1,5 +1,5 @@
-#ifndef 3DSLICE_H
-#define 3DSLICE_H
+#ifndef SLICE3D_H
+#define SLICE3D_H
 
 #include "Slice.h"
 #include "TopoDS_Face.hxx"
@@ -11,16 +11,13 @@
 class Splitter;
 class Marker;
 
-class 3DSlice : public Slice
+class Slice3D : public Slice
 {
 public:
 
-  3DSlice(const TopoDS_Edge& edge, const TopoDS_Face& face,
+  Slice3D(const TopoDS_Edge& edge, const TopoDS_Face& face,
       const bool performNow=true, const double baseTol=0.05
     );
-
-  std::list<Slice> split(Splitter& splitter);
-  void refine(Marker& marker);
 
   virtual gp_Vec surfaceNormal(const double& u);
 
@@ -29,14 +26,13 @@ public:
 
 private:
 
-  virtual void emptyCopy(std::unique_ptr<Slice>& ptr);
+  Slice* emptyCopy();
 
   void performBaseTessilation(std::list<double>& params,
       std::list<gp_Pnt>& points);
 
-  void calc(const std::list<double>& params,
+  virtual void calc(const std::list<double>& params,
       std::list<gp_Pnt>& points,
-      std::list<gp_Vec>& normals,
       std::list<double>& alphas
     );
   //void calc(const std::list<double>& params, const std::list<gp_Pnt>& points);
@@ -44,4 +40,4 @@ private:
   double baseTol;
 };
 
-#endif//3DSLICE_H
+#endif//SLICE3D_H

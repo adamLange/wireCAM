@@ -1,4 +1,4 @@
-#include "3DSlice.h"
+#include "Slice3D.h"
 #include "Splitter.h"
 #include <list>
 #include <cmath>
@@ -22,7 +22,7 @@
 
 using namespace std;
 
-3DSlice::3DSlice(const TopoDS_Edge& edge, const TopoDS_Face& face,
+Slice3D::Slice3D(const TopoDS_Edge& edge, const TopoDS_Face& face,
     const bool performNow, const double baseTol
   ):
   edge(edge),
@@ -34,15 +34,19 @@ using namespace std;
     //list<double> params;
     //list<gp_Pnt> points;
     performBaseTessilation(params,points);
-    calc(params,points,normals,alphas);
+    calc(params,points,alphas);
   }
 }
 
-3DSlice::emptyCopy()
+Slice*
+Slice3D::emptyCopy()
 {
+  //Slice3D* newSlice = new Slice3D(this->edge,this->face,false,this->baseTol);
+  //return newSlice;
+  return new Slice3D(this->edge,this->face,false,this->baseTol);
 }
 
-void 3DSlice::performBaseTessilation(list<double>& params,
+void Slice3D::performBaseTessilation(list<double>& params,
    list<gp_Pnt>& points)
 {
   BRepMesh_IncrementalMesh meshOp(edge,baseTol);
@@ -67,14 +71,12 @@ void 3DSlice::performBaseTessilation(list<double>& params,
   }
 }
 
-void 3DSlice::calc(const list<double>& params,
+void Slice3D::calc(const list<double>& params,
       list<gp_Pnt>& points,
-      list<gp_Vec>& normals,
       list<double>& alphas
     )
 {
   points.clear();
-  normals.clear();
   alphas.clear();
   BRep_Tool bt;
   double p0,p1;
@@ -109,7 +111,6 @@ void 3DSlice::calc(const list<double>& params,
     alpha = atan2(norm.Y(),norm.X());
 
     points.push_back(pnt_s);
-    normals.push_back(norm);
     alphas.push_back(alpha);
   }
 }
