@@ -78,39 +78,93 @@ void Slice3D::calc(const list<double>& params,
 {
   points.clear();
   alphas.clear();
+  
   BRep_Tool bt;
   double p0,p1;
   Handle(Geom_Curve) curve = bt.Curve(edge,p0,p1);
-  Handle(Geom_Surface) surface = bt.Surface(face);
+  //Handle(Geom_Surface) surface = bt.Surface(face);
+  
   for (list<double>::const_iterator it = params.begin();
        it != params.end();
        ++it)
   {
     gp_Pnt pnt = curve->Value(*it);
-    BRepBuilderAPI_MakeVertex mv(pnt);
-    TopoDS_Vertex v = mv.Vertex();
-    BRepExtrema_ExtPF extr(v,face);
-    int minExtIndex = -1;
-    double minDSq = -1234.0;
-    for (int i = 1; i <= extr.NbExt(); ++i)
-    {
-      double di = extr.SquareDistance(i);
-      if ((di<minDSq)|(minDSq < 0))
-      {
-        minExtIndex = i;
-        minDSq = di;
-      }
-    }
-    double u_s,v_s,alpha;
-    extr.Parameter(minExtIndex,u_s,v_s);
-    gp_Vec du, dv, norm;
-    gp_Pnt pnt_s;
+    //BRepBuilderAPI_MakeVertex mv(pnt);
+    //TopoDS_Vertex v = mv.Vertex();
+    //BRepExtrema_ExtPF extr(v,face);
+    //int minExtIndex = -1;
+    //double minDSq = -1234.0;
+    //for (int i = 1; i <= extr.NbExt(); ++i)
+    //{
+    //  double di = extr.SquareDistance(i);
+    //  if ((di<minDSq)|(minDSq < 0))
+    //  {
+    //    minExtIndex = i;
+    //    minDSq = di;
+    //  }
+    //}
+    //double u_s,v_s,alpha;
+    //extr.Parameter(minExtIndex,u_s,v_s);
+    //gp_Vec du, dv, norm;
+    //gp_Pnt pnt_s;
 
-    surface->D1(u_s,v_s,pnt_s,du,dv);
-    norm = dv.Crossed(du).Normalized();
-    alpha = atan2(norm.Y(),norm.X());
+    //surface->D1(u_s,v_s,pnt_s,du,dv);
+    //norm = dv.Crossed(du).Normalized();
+    gp_Dir norm(surfaceNormal(*it));
 
-    points.push_back(pnt_s);
+    double alpha = atan2(norm.Y(),norm.X());
+
+    points.push_back(pnt);
     alphas.push_back(alpha);
   }
 }
+
+gp_Dir
+Slice3D::surfaceNormal(const double& u)
+{
+  BRep_Tool bt;
+  double p0,p1;
+  Handle(Geom_Curve) curve = bt.Curve(edge,p0,p1);
+  Handle(Geom_Surface) surface = bt.Surface(face);
+  gp_Pnt pnt = curve->Value(u);
+  BRepBuilderAPI_MakeVertex mv(pnt);
+  TopoDS_Vertex v = mv.Vertex();
+  BRepExtrema_ExtPF extr(v,face);
+  int minExtIndex = -1;
+  double minDSq = -1234.0;
+  for (int i = 1; i <= extr.NbExt(); ++i)
+  {
+    double di = extr.SquareDistance(i);
+    if ((di<minDSq)|(minDSq < 0))
+    {
+      minExtIndex = i;
+      minDSq = di;
+    }
+  }
+  double u_s,v_s,alpha;
+  extr.Parameter(minExtIndex,u_s,v_s);
+  gp_Vec du, dv, norm;
+  gp_Pnt pnt_s;
+
+  surface->D1(u_s,v_s,pnt_s,du,dv);
+  norm = dv.Crossed(du).Normalized();
+  return gp_Dir(norm.XYZ());
+}
+
+TopoDS_Shape
+Slice3D::shape()
+{
+  return edge;
+}
+
+void
+Slice3D::updateGeometry()
+{
+  BRep_Tool bt;
+  double p0,p1;
+  Handle(Geom_Curve) curve = bt.Curve(edge,p0,p1);
+  BRepBuilderAPI_MakeEdge me(curve,params.front(),params.back());
+  edge = me.Edge();
+  return;
+}
+

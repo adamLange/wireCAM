@@ -10,7 +10,7 @@ class Splitter{
 public:
 
   virtual bool
-  evaluate(const Slice& slice, const double& param, const gp_Pnt& point,
+  evaluate(Slice& slice, const double& param, const gp_Pnt& point,
                        const double& alpha);
 
 };

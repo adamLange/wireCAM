@@ -1,4 +1,5 @@
 #include "SurfaceNormalSplitter.h"
+#include "Slice3D.h"
 
 SurfaceNormalSplitter::SurfaceNormalSplitter()
 {
@@ -29,15 +30,20 @@ SurfaceNormalSplitter::setZLimits(const double& zMin,const double& zMax)
 
 bool
 SurfaceNormalSplitter::evaluate(
-    const Slice& slice,
+    Slice& slice,
     const double& param, const gp_Pnt& point,
-    const gp_Vec& normal, const double& alpha
+    const double& alpha
   )
 {
-  double x = normal.X();
-  double y = normal.Y();
-  double z = normal.Z();
-  return (x>=xMin)&&(x<=xMax)&&
+  if (typeid(slice)==typeid(Slice3D))
+  {
+    Slice3D* s3d = dynamic_cast<Slice3D*>(&slice);
+    gp_Dir normal(s3d->surfaceNormal(param));
+    double x = normal.X();
+    double y = normal.Y();
+    double z = normal.Z();
+    return (x>=xMin)&&(x<=xMax)&&
          (y>=yMin)&&(y<=yMax)&&
          (z>=zMin)&&(z<=zMax);
+  }
 }

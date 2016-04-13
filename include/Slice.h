@@ -21,7 +21,9 @@ public:
 
   void refine(Marker& marker);
 
-  virtual gp_Vec surfaceNormal(const double& u);
+  virtual gp_Dir surfaceNormal(const double& u);
+
+  virtual TopoDS_Shape shape();
 
   std::list<double> params;
   std::list<gp_Pnt> points;
@@ -31,7 +33,7 @@ private:
 
   virtual Slice* emptyCopy();
   virtual void updateGeometry();
-  void calc(const std::list<double> params, std::list<gp_Pnt> points,
+  virtual void calc(const std::list<double> params, std::list<gp_Pnt> points,
     std::list<double> alphas);
 
 };

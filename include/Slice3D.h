@@ -19,7 +19,9 @@ public:
       const bool performNow=true, const double baseTol=0.05
     );
 
-  virtual gp_Vec surfaceNormal(const double& u);
+  virtual gp_Dir surfaceNormal(const double& u);
+
+  virtual TopoDS_Shape shape();
 
   TopoDS_Edge edge;
   TopoDS_Face face;
@@ -35,7 +37,7 @@ private:
       std::list<gp_Pnt>& points,
       std::list<double>& alphas
     );
-  //void calc(const std::list<double>& params, const std::list<gp_Pnt>& points);
+  virtual void updateGeometry();
 
   double baseTol;
 };

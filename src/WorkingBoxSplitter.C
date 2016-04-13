@@ -17,9 +17,9 @@ WorkingBoxSplitter::setWorkingBox(
 }
 
 bool
-WorkingBoxSplitter::evaluate(const Slice& slice,
+WorkingBoxSplitter::evaluate(Slice& slice,
     const double& param, const gp_Pnt& point,
-    const gp_Vec& normal, const double& alpha
+    const double& alpha
   )
 {
   bool rval;

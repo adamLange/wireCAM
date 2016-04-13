@@ -170,3 +170,16 @@ Slice::calc(const list<double> params, list<gp_Pnt> points,
     alphas.push_back(0.);
   }
 }
+
+TopoDS_Shape
+Slice::shape()
+{
+  BRepBuilderAPI_MakeEdge me(gp_Pnt(0,0,0),gp_Pnt(1,0,0));
+  return me.Edge();
+}
+
+gp_Dir
+Slice::surfaceNormal(const double& u)
+{
+  return gp_Dir(0,0,1);
+}
