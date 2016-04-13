@@ -4,66 +4,33 @@
 #include "BRepOffsetAPI_MakeOffset.hxx"
 #include "TopExp_Explorer.hxx"
 
+#include "gp_Vec.hxx"
+#include "gp_Trsf.hxx"
+#include "BRepBuilderAPI_Transform.hxx"
+
 #include <exception>
 #include <stdexcept>
 
-Pocket::Pocket(TopoDS_Wire& wire):
-  offset(-1),
-  zOffset(0),
-  radius(10),
-  square(true),
-  outward(true),
-  wire(wire)
+
+Pocket::Pocket(TopoDS_Wire& wire, double& offset, double& zOffset,
+    double& toolR, double& step, bool squareCorners, bool orderOut)
+  wireIn(wire),
+  offset(offset),
+  zOffset(zOffset),
+  toolR(toolR),
+  step(step),
+  squareCorners(squareCorners),
+  orderOut(orderOut)
 {
+  calculate();
 }
 
-void
-Pocket::setOffset(double& off)
-{
-  offset=off;
-}
-
-void
-Pocket::setZOffset(double& zoff)
-{
-   zOffset = zoff;
-}
-
-void
-Pocket::setCornerSquare()
-{
-  square = true;
-}
-
-void
-Pocket::setCornerRound()
-{
-  square = false;
-}
-
-void
-Pocket::setRadius(double& r)
-{
-  radius = r;
-}
-
-void
-Pocket::setOrderOut()
-{
-  outward = true;
-}
-
-void
-Pocket::setOrderIn()
-{
-  outward = false;
-}
 
 void
 Pocket::calculate()
 {
 
-  BRepOffsetAPI_MakeOffset mo(wire);
+  BRepOffsetAPI_MakeOffset mo(wireIn);
   mo.Perform(offset);
   TopoDS_Shape result = mo.Shape();
   TopExp_Explorer exp;
@@ -81,7 +48,26 @@ Pocket::calculate()
        resulted in other that one wire!");
   }
 
-  pathTree.calculate(wires.front(),offset,true);
+  offsetWire = wires.front();
+  gp_Trsf trsf;
+  trsf.SetTranslation(gp_Vec(0,0,zOffset));
+  BRepBuilerAPI_Transform mt(offsetWire,trsf);
+  wires.clear();
+  for (exp.Init(result,TopAbs_WIRE);
+       exp.More();
+       exp.Next()
+      )
+  {
+    wires.push_back(TopoDS::Wire(exp.Current()));
+  }
+  if (wires.size() != 1)
+  {
+    throw std::runtime_error("In Pocket::calculate the zOffset transform\
+       resulted in more than one wire!");
+  }
+  offsetWire = wires.front();
+
+  //pathTree.calculate(offsetWire,offset,true);
 
   return;
 }

@@ -19,7 +19,7 @@ private:
   double baseTol;
   virtual Slice* emptyCopy();
   virtual void updateGeometry();
-  virtual void calc(const std::list<double>& params,
+  virtual void calc(std::list<double>& params,
     std::list<gp_Pnt>& points, std::list<double>& alphas);
   void performBaseTessilation(std::list<double>& params,
     std::list<gp_Pnt>& points);

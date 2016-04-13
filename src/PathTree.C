@@ -1,5 +1,6 @@
 #include "PathTree.h"
 #include "BRepOffsetAPI_MakeOffset.hxx"
+#include "BRepOffsetAPI_NormalProjection.hxx"
 #include "TopExp_Explorer.hxx"
 #include "TopoDS.hxx"
 #include "TopoDS_Builder.hxx"
@@ -14,8 +15,15 @@
 #include <exception>
 #include <stdexcept>
 
+#include "BRepGProp.hxx"
+#include "GProp_GProps.hxx"
+#include "BRepBuilderAPI_MakeFace.hxx"
+
+#include <iostream>
+
 PathTree::PathTree(TopoDS_Wire& w, double& offset, double& step,
-  bool squareCorners,double cornerATol)
+  bool squareCorners,double cornerATol):
+  squareCorners(squareCorners)
 {
   //offset w
   BRepOffsetAPI_MakeOffset mo(w);
@@ -52,6 +60,15 @@ PathTree::PathTree(TopoDS_Wire* outerWire, TopoDS_Wire& w,
 void
 PathTree::calculate()
 {
+
+  GProp_GProps props;
+  BRepGProp gprop;
+  gprop.LinearProperties(wire,props);
+  //BRepGPropLinearProperties(wire,props);
+  gp_Pnt com = props.CentreOfMass();
+  
+  BRepBuilderAPI_MakeFace mf();
+
   TopExp_Explorer exp;
   for (exp.Init(wire,TopAbs_EDGE);exp.More();exp.Next())
   {
@@ -89,6 +106,8 @@ PathTree::calculate()
   //Do offset
   BRepOffsetAPI_MakeOffset mo(wire);
   mo.Perform(offset);
+
+
   TopoDS_Shape result = mo.Shape();
   std::list<TopoDS_Wire> wires;
   for (exp.Init(result,TopAbs_WIRE);
@@ -97,6 +116,19 @@ PathTree::calculate()
       )
   {
     TopoDS_Wire wi(TopoDS::Wire(exp.Current()));
+    BRepOffsetAPI_NormalProjection np(projFace);
+    np.Add(wi);
+    TopTools_ListOfShape los;
+    if (!np.BuildWire(los))
+    {
+      throw std::runtime_error("failed to project wire");
+    }
+    wi = los.First();
+    los.RemoveFirst();
+    if (!los.IsEmpty())
+    {
+      throw std::runtime_error("projection resulted in multiple wires");
+    }
     TopoDS_Wire* ptrw;
     children.emplace_back(ptrw,wi,offset);
   }

@@ -12,15 +12,8 @@ class Pocket
 {
 public:
 
-  Pocket(TopoDS_Wire& wire);
-
-  void setOffset(double& off);
-  void setZOffset(double& zoff);
-  void setCornerSquare();
-  void setCornerRound();
-  void setRadius(double& r);
-  void setOrderOut();
-  void setOrderIn();
+  Pocket(TopoDS_Wire& wire, double& offset, double& zOffset,
+    double& toolR, double& step, bool squareCorners, bool orderOut);
 
   void calculate();
   std::string postProcess(PostProcessor& pp);
@@ -29,10 +22,13 @@ public:
 
 private:
 
-  double offset,zOffset,radius;
-  bool square,outward;
-  TopoDS_Wire& wire;
+  TopoDS_Wire& wireIn,offsetWire;
+
+  double offset,zOffset,toolR,step;
+  bool squareCorners,orderOut;
   PathTree pathTree;
+
+  TopoDS_Face face;
 
 };
 
