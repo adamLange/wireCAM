@@ -4,29 +4,58 @@
 #include "TopoDS.hxx"
 #include "TopoDS_Builder.hxx"
 #include "BRep_Tool.hxx"
-#include "Slice.hxx"
+#include "TopoDS.hxx"
+//#include "Slice.h"
+#include "PocketEdgeSlice.h"
+#include "PocketCornerSlice.h"
 #include <iostream>
-#include <math>
+#include <cmath>
+#define _USE_MATH_DEFINES
+#include <exception>
+#include <stdexcept>
 
-PathTree::PathTree()
+PathTree::PathTree(TopoDS_Wire& w, double& offset, double& step,
+  bool squareCorners,double cornerATol)
 {
+  //offset w
+  BRepOffsetAPI_MakeOffset mo(w);
+  mo.Perform(offset);
+  TopoDS_Shape result = mo.Shape();
+  std::list<TopoDS_Wire> wires;
+  TopExp_Explorer exp;
+  for (exp.Init(result,TopAbs_WIRE); exp.More(); exp.Next())
+  {
+    TopoDS_Wire wi(TopoDS::Wire(exp.Current()));
+  }
+  if (wires.size()>1)
+  {
+    throw std::runtime_error("PathTree::PathTree initial offset resulted\
+      in more than one wire.");
+  }
+  wire = wires.front();
+  outerWire = &w;
+  this->offset = step;
+  this->cornerATol = cornerATol;
+  calculate();
 }
 
-PathTree::PathTree(TopoDS_Wire& w,double& offset,bool isOuter):
+PathTree::PathTree(TopoDS_Wire* outerWire, TopoDS_Wire& w,
+    double& offset, double cornerATol
+  ):
+  outerWire(outerWire),
+  offset(offset),
+  cornerATol(cornerATol)
 {
-  calculate(w,offset,isOuter);
+  calculate();
 }
 
 void
-PathTree::calculate(TopoDS_Wire& w,double& offset,bool isOuter)
+PathTree::calculate()
 {
-  //wire = Handle(TopoDS_TWire)::DownCast(w.TShape());
-  wire = w;
-  //Calc toolpath data
   TopExp_Explorer exp;
   for (exp.Init(wire,TopAbs_EDGE);exp.More();exp.Next())
   {
-    PocketSliceEdge* new e(exp.Current());
+    PocketEdgeSlice* e = new PocketEdgeSlice(TopoDS::Edge(exp.Current()),true,1e-3);
     slices.push_back(*e);
   }
   //Cut corners
@@ -37,14 +66,18 @@ PathTree::calculate(TopoDS_Wire& w,double& offset,bool isOuter)
     ++head;
     while (tail!=slices.end())
     {
-      double dalpha std::abs(head.params.alphas()-tail.params.alphas());
-      if (dalpha > cornerATol) //need cornerSlice
+      double dalpha = std::abs(head->alphas.back()-tail->alphas.front());
+      if ((outerWire)&&(dalpha > cornerATol)) //need cornerSlice
       {
-        PocketCornerSlice* new cs;
+        gp_Pnt pnt = head->points.back();
+        double alpha0 = tail->alphas.back();
+        double alpha1 = head->alphas.front();
+        PocketCornerSlice* cs = new PocketCornerSlice(pnt,alpha0,alpha1,
+          *outerWire,offset);
         slices.insert(head,*cs);
         ++tail;
       }
-  
+
       ++head;
       ++tail;
       if(head==slices.end())
@@ -64,7 +97,8 @@ PathTree::calculate(TopoDS_Wire& w,double& offset,bool isOuter)
       )
   {
     TopoDS_Wire wi(TopoDS::Wire(exp.Current()));
-    children.emplace(children.end(),wi,offset,false);
+    TopoDS_Wire* ptrw;
+    children.emplace_back(ptrw,wi,offset);
   }
 }
 

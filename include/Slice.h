@@ -33,8 +33,8 @@ private:
 
   virtual Slice* emptyCopy();
   virtual void updateGeometry();
-  virtual void calc(const std::list<double> params, std::list<gp_Pnt> points,
-    std::list<double> alphas);
+  virtual void calc(const std::list<double>& params, std::list<gp_Pnt>& points,
+    std::list<double>& alphas);
 
 };
 

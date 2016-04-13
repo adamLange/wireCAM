@@ -5,11 +5,24 @@
 
 class PocketEdgeSlice : public Slice
 {
+
 public:
-  PocketEdgeSlice();
+
+  PocketEdgeSlice(TopoDS_Edge edge, bool performNow = true,
+    double baseTol = 1e-3);
+
+  virtual TopoDS_Shape shape();
 
 private:
-  TopoDSEdge& edge;
+
+  TopoDS_Edge& edge;
+  double baseTol;
+  virtual Slice* emptyCopy();
+  virtual void updateGeometry();
+  virtual void calc(const std::list<double>& params,
+    std::list<gp_Pnt>& points, std::list<double>& alphas);
+  void performBaseTessilation(std::list<double>& params,
+    std::list<gp_Pnt>& points);
 
 };
 

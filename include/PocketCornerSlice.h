@@ -13,7 +13,6 @@ public:
   PocketCornerSlice(const gp_Pnt& pnt,const double& alpha0,
     const double& alpha1,TopoDS_Wire& outerWire,const double& toolR
   );
-  virtual void calc();
 
 private:
   gp_Pnt pivotPnt; //pivot point
@@ -21,6 +20,8 @@ private:
   double r; //tool radius
   gp_Dir wireNormal;
   Handle(BRepAdaptor_HCompCurve) cc;
+  virtual void calc(const std::list<double>& params, 
+    std::list<gp_Pnt>& points, std::list<double>& alphas);
 };
 
 #endif//POCKETCORNERSLICE_H

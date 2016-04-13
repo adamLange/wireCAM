@@ -3,6 +3,9 @@
 
 #include "gp_Vec.hxx"
 #include "gp_Pnt.hxx"
+#include "gp_Ax3.hxx"
+
+#include "Geom_Plane.hxx"
 
 #include "Extrema_ExtCS.hxx"
 #include "Extrema_POnCurv.hxx"
@@ -19,6 +22,7 @@
 #include "Standard_Transient.hxx"
 
 #include <exception>
+#include <stdexcept>
 #include <cmath>
 #define _USE_MATH_DEFINES
 
@@ -30,15 +34,15 @@ PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0
   outerWire(outerWire),
   r(toolR)
 {
-  cc = new BRepAdaptor_CompCurve(this->outerWire);
+  cc = new BRepAdaptor_HCompCurve(this->outerWire);
   BRepBuilderAPI_MakeFace mf(outerWire);
   if (not mf.IsDone())
   {
-    throw runtime_error("PocketCornerSlice failure to make face");
+    throw std::runtime_error("PocketCornerSlice failure to make face");
   }
-  mf.Face();
+  TopoDS_Face face(mf.Face());
   //Check if normal to z axis
-  IntTools_FClass2d pointClassifier(face);
+  IntTools_FClass2d pointClassifier(face,1e-6);
   gp_Pnt pnt;
   gp_Vec tang;
   cc->D1(cc->FirstParameter(),pnt,tang);
@@ -72,7 +76,7 @@ PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0
       wireNormal = gp_Dir(0,0,-1);
       break;
     case TopAbs_ON:
-      throw std::runtime_exeception(
+      throw std::runtime_error(
         "point landed on face edge when checking outer wire\
          orientation.");
       break;
@@ -80,20 +84,18 @@ PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0
 }
 
 void 
-PocketCornerSlice::calc(const list<double>& params,
-      list<gp_Pnt>& points,
-      list<gp_Vec>& normals,
-      list<double>& alphas
+PocketCornerSlice::calc(const std::list<double>& params,
+      std::list<gp_Pnt>& points,
+      std::list<double>& alphas
     )
 {
   points.clear();
-  normals.clear();
   alphas.clear();
   BRep_Tool bt;
   //double p0,p1;
   //Handle(Geom_Curve) curve = bt.Curve(edge,p0,p1);
   //Handle(Geom_Surface) surface = bt.Surface(face);
-  for (list<double>::const_iterator alpha = params.begin();
+  for (std::list<double>::const_iterator alpha = params.begin();
        alpha != params.end();
        ++alpha)
   {
@@ -102,9 +104,9 @@ PocketCornerSlice::calc(const list<double>& params,
     gp_Vec vec_plane_x = tang.Crossed(gp_Vec(wireNormal.XYZ()));
     gp_Dir dir_plane_x(vec_plane_x.XYZ());
     gp_Ax3 ax(pivotPnt,tang,dir_plane_x);
-    Handle(Geom_Plane) new pln(ax);
+    Handle(Geom_Plane) pln = new Geom_Plane(ax);
 
-    Extrema_ExtCS inter(cc,GeomAdaptor_Surface(pln));
+    Extrema_ExtCS inter(cc->GetCurve(),GeomAdaptor_Surface(pln),1e-6,1e-6);
     // search for the intersection closest to the pivot point
     // with u_c > 0
     int i_min_dist;
@@ -121,20 +123,19 @@ PocketCornerSlice::calc(const list<double>& params,
       if ((u<min_dist)&(u>0))
       {
         min_dist = u;
-        intPnt pos.Value();
+        intPnt = pos.Value();
       }
     }
     gp_Vec intVec(intPnt.XYZ());
     gp_Vec pivotVec(pivotPnt.XYZ());
     gp_Vec rVec(
-        tool.r*std::cos(*alpha-M_PI/2.),
-        tool.r*std::sin(*alpha-M_PI/2.),
+        r*std::cos(*alpha-M_PI/2.),
+        r*std::sin(*alpha-M_PI/2.),
         0
       );
     gp_Vec toolPosVec(intVec-rVec);
 
-    points.push_back(tolPosVec.XYZ(),);
+    points.push_back(toolPosVec.XYZ());
     alphas.push_back(*alpha);
-    //normals.push_back();
   }
 }

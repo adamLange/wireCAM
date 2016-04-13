@@ -157,8 +157,8 @@ Slice::updateGeometry()
 }
 
 void
-Slice::calc(const list<double> params, list<gp_Pnt> points,
-  list<double> alphas)
+Slice::calc(const list<double>& params, list<gp_Pnt>& points,
+  list<double>& alphas)
 {
   points.clear();
   alphas.clear();
