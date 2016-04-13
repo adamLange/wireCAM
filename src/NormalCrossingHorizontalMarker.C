@@ -1,5 +1,6 @@
 #include "NormalCrossingHorizontalMarker.h"
 #include <cmath>
+#include "Slice.h"
 
 NormalCrossingHorizontalMarker::NormalCrossingHorizontalMarker() :
   maxDz(12345)
@@ -16,12 +17,12 @@ bool
 NormalCrossingHorizontalMarker::evaluate(
     Slice& slice,
     double& paramHead, gp_Pnt& pointHead,
-    gp_Vec& normalHead, double& alphaHead,
+    double& alphaHead,
     double& paramTail, gp_Pnt& pointTail,
-    gp_Vec& normalTail, double& alphaTail
+    double& alphaTail
   )
 {
-  double z1 = normalHead.Z();
-  double z2 = normalTail.Z();
+  double z1 = slice.surfaceNormal(paramHead).Z();
+  double z2 = slice.surfaceNormal(paramTail).Z();
   return (z1*z2 < 0) && (std::abs(z2-z1)>maxDz);
 }

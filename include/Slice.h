@@ -5,6 +5,8 @@
 #include "TopoDS_Edge.hxx"
 #include "gp_Pnt.hxx"
 #include <list>
+#include <memory>
+#include <utility>
 //using namespace std;
 
 class Splitter;
@@ -14,33 +16,26 @@ class Slice
 {
 public:
 
-  Slice(const TopoDS_Edge& edge, const TopoDS_Face& face,
-      const bool performNow=true, const double baseTol=0.05
-    );
+  Slice();
+  std::list<std::unique_ptr<Slice>> split(Splitter& splitter);
 
-  std::list<Slice> split(Splitter& splitter);
   void refine(Marker& marker);
 
-  TopoDS_Edge edge;
-  TopoDS_Face face;
+  virtual gp_Dir surfaceNormal(const double& u);
+
+  virtual TopoDS_Shape shape();
+
   std::list<double> params;
   std::list<gp_Pnt> points;
-  std::list<gp_Vec> normals;
   std::list<double> alphas;
 
 private:
 
-  void performBaseTessilation(std::list<double>& params,
-      std::list<gp_Pnt>& points);
+  virtual Slice* emptyCopy();
+  virtual void updateGeometry();
+  virtual void calc(const std::list<double> params, std::list<gp_Pnt> points,
+    std::list<double> alphas);
 
-  virtual void calc(const std::list<double>& params,
-      std::list<gp_Pnt>& points,
-      std::list<gp_Vec>& normals,
-      std::list<double>& alphas
-    );
-  //void calc(const std::list<double>& params, const std::list<gp_Pnt>& points);
-
-  double baseTol;
 };
 
 #endif//WIRECAMSLICE_H

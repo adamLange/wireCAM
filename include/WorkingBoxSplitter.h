@@ -12,8 +12,8 @@ public:
   WorkingBoxSplitter();
 
   virtual bool
-  evaluate(const Slice& slice, const double& param, const gp_Pnt& point,
-                       const gp_Vec& normal, const double& alpha);
+  evaluate(Slice& slice, const double& param, const gp_Pnt& point,
+                       const double& alpha);
 
   void
   setWorkingBox(const double& x0, const double& y0, const double& z0,

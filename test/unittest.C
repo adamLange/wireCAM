@@ -10,7 +10,7 @@
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "TopoDS_Face.hxx"
 #include "TargetSurface.h"
-#include "Slice.h"
+#include "Slice3D.h"
 #include "SurfaceNormalSplitter.h"
 #include "TraverseAngleSplitter.h"
 #include "WorkingBoxSplitter.h"
@@ -87,20 +87,19 @@ TEST_F(TargetSurfaceMemberFunctionTest, slice_allOptions){
   EXPECT_TRUE(edges.size() >= 1);
 }
 
-TEST(Slice,construct){
+TEST(Slice3D,construct){
   TargetSurface tgtsurf("single_surface.STEP");
   gp_Dir dir(1,1,0);
   list<TopoDS_Edge> edges = tgtsurf.slice(dir,25);
-  Slice mySlice(edges.front(),tgtsurf.face);
+  Slice3D mySlice(edges.front(),tgtsurf.face);
   TopoDS_Edge e = mySlice.edge;
   TopoDS_Face f = mySlice.face;
   list<double> params = mySlice.params;
   list<gp_Pnt> pts = mySlice.points;
-  list<gp_Vec> normals = mySlice.normals;
   list<double> alphas = mySlice.alphas;
 }
 
-class SliceOperations : public ::testing::Test{
+class Slice3DOperations : public ::testing::Test{
 protected:
   virtual void SetUp()
   {
@@ -112,94 +111,94 @@ protected:
          ++edge_it
         )
     {
-      slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+      slices.emplace_back(new Slice3D(*edge_it,tgtsurf.face));
     }
   }
-  list<Slice> slices;
+  list<unique_ptr<Slice>> slices;
 };
 
-TEST_F(SliceOperations,SurfaceNormalSplitter){
+TEST_F(Slice3DOperations,SurfaceNormalSplitter){
   SurfaceNormalSplitter sns;
   sns.setZLimits(0,1.1);
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->split(sns);
+    (*slice_it)->split(sns);
   }
 }
 
-TEST_F(SliceOperations,TraverseAngleSplitter){
+TEST_F(Slice3DOperations,TraverseAngleSplitter){
   TraverseAngleSplitter sns;
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->split(sns);
+    (*slice_it)->split(sns);
   }
 }
 
-TEST_F(SliceOperations,WorkingBoxSplitter){
+TEST_F(Slice3DOperations,WorkingBoxSplitter){
   WorkingBoxSplitter sns;
   sns.setWorkingBox(400,-500,-200,1000,500,200);
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->split(sns);
+    (*slice_it)->split(sns);
   }
 }
 
-TEST_F(SliceOperations,PointToPointDistanceMarker){
+TEST_F(Slice3DOperations,PointToPointDistanceMarker){
   PointToPointDistanceMarker m;
   m.setMaxDistance(4);
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->refine(m);
+    (*slice_it)->refine(m);
   }
 }
 
-TEST_F(SliceOperations,AlphaJumpMarker){
+TEST_F(Slice3DOperations,AlphaJumpMarker){
   AlphaJumpMarker m;
   m.setMaxAlphaJump(M_PI/100);
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->refine(m);
+    (*slice_it)->refine(m);
   }
 }
 
-TEST_F(SliceOperations,NormalCrossingHorizontalMarker){
+TEST_F(Slice3DOperations,NormalCrossingHorizontalMarker){
   NormalCrossingHorizontalMarker m;
   m.setMaxDz(0.05);
-  for (list<Slice>::iterator slice_it = slices.begin();
+  for (list<unique_ptr<Slice>>::iterator slice_it = slices.begin();
        slice_it != slices.end();
        ++slice_it
       )
   {
-    slice_it->refine(m);
+    (*slice_it)->refine(m);
   }
 }
 
 TEST(PostProcessor,postProcess){
   TargetSurface tgtsurf("single_surface.STEP");
   gp_Dir dir(1,1,0);
-  list<Slice> slices;
+  list<unique_ptr<Slice>> slices;
   list<TopoDS_Edge> edges = tgtsurf.slice(dir,5);
   for (list<TopoDS_Edge>::iterator edge_it = edges.begin();
        edge_it != edges.end();
        ++edge_it
       )
   {
-    slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+    slices.emplace_back(new Slice3D(*edge_it,tgtsurf.face));
   }
 
   PostProcessor pp(50,1/25.4,180/M_PI);
@@ -209,59 +208,16 @@ TEST(PostProcessor,postProcess){
 TEST(FullStack,wingToGCode){
   TargetSurface tgtsurf("single_surface.STEP");
   gp_Dir dir(1,1,0);
-  list<Slice> slices;
+  list<unique_ptr<Slice>> slices;
   list<TopoDS_Edge> edges = tgtsurf.slice(dir,5);
   for (list<TopoDS_Edge>::iterator edge_it = edges.begin();
        edge_it != edges.end();
        ++edge_it
       )
   {
-    slices.emplace(slices.end(),*edge_it,tgtsurf.face);
+    slices.emplace_back(new Slice3D(*edge_it,tgtsurf.face));
   }
 
-  /*
-  list<unique_ptr<Splitter>> splitters;
-
-  unique_ptr<Splitter> sns(new SurfaceNormalSplitter);
-  sns->setZLimits(0,1.1);
-  splitters.push_back(sns);
-
-  TraverseAngleSplitter tas;
-  splitters.push_back(&tas);
-
-  WorkingBoxSplitter wbs;
-  wbs.setWorkingBox(400,-500,-200,1000,500,200);
-  splitters.push_back(&wbs);
-
-  list<Marker*> markers;
-  PointToPointDistanceMarker p2pdm;
-  p2pdm.setMaxDistance(2);
-  markers.push_back(&p2pdm);
-
-  AlphaJumpMarker ajm;
-  ajm.setMaxAlphaJump(M_PI/100);
-  markers.push_back(&ajm);
-
-  NormalCrossingHorizontalMarker nchm;
-  nchm.setMaxDz(0.05);
-  markers.push_back(&nchm);
-
-  for (list<Splitter>::iterator splitter = splitters.begin();
-         splitter != splitters.end();
-         ++splitter
-      )
-  {
-    list<Slice> newSlices;
-    for (list<Slice>::iterator slice_it = slices.begin();
-         slice_it != slices.end();
-         ++slice_it
-      )
-    {
-      newSlices.splice(newSlices.end(),slice_it->split(**splitter));
-    }
-  }
-
-  */
   PostProcessor pp(10,1/25.4,180/M_PI);
   cout<<pp.postProcess(slices);
 

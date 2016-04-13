@@ -12,9 +12,9 @@ public:
   bool
   virtual evaluate(Slice& slice,
       double& paramHead, gp_Pnt& pointHead,
-      gp_Vec& normalHead, double& alphaHead,
+      double& alphaHead,
       double& paramTail, gp_Pnt& pointTail,
-      gp_Vec& normalTail, double& alphaTail
+      double& alphaTail
     );
 
   void setMaxDistance(const double& limit);

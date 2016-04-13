@@ -10,8 +10,8 @@ public:
   TraverseAngleSplitter();
 
   virtual bool
-  evaluate(const Slice& slice, const double& param, const gp_Pnt& point,
-                       const gp_Vec& normal, const double& alpha);
+  evaluate(Slice& slice, const double& param, const gp_Pnt& point,
+                       const double& alpha);
 
   void
   setMaxTraverseAngle(const double& angle);
