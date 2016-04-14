@@ -12,8 +12,8 @@
 #include <stdexcept>
 
 
-Pocket::Pocket(TopoDS_Wire& wire, double& offset, double& zOffset,
-    double& toolR, double& step, bool squareCorners, bool orderOut)
+Pocket::Pocket(TopoDS_Wire& wire, double offset, double zOffset,
+    double toolR, double step, bool squareCorners, bool orderOut):
   wireIn(wire),
   offset(offset),
   zOffset(zOffset),
@@ -29,9 +29,8 @@ Pocket::Pocket(TopoDS_Wire& wire, double& offset, double& zOffset,
 void
 Pocket::calculate()
 {
-
   BRepOffsetAPI_MakeOffset mo(wireIn);
-  mo.Perform(offset);
+  mo.Perform(offset-toolR);
   TopoDS_Shape result = mo.Shape();
   TopExp_Explorer exp;
   std::list<TopoDS_Wire> wires;
@@ -51,7 +50,7 @@ Pocket::calculate()
   offsetWire = wires.front();
   gp_Trsf trsf;
   trsf.SetTranslation(gp_Vec(0,0,zOffset));
-  BRepBuilerAPI_Transform mt(offsetWire,trsf);
+  BRepBuilderAPI_Transform mt(offsetWire,trsf);
   wires.clear();
   for (exp.Init(result,TopAbs_WIRE);
        exp.More();
@@ -67,7 +66,7 @@ Pocket::calculate()
   }
   offsetWire = wires.front();
 
-  //pathTree.calculate(offsetWire,offset,true);
+  pathTree.reset( new PathTree(*this,offsetWire,squareCorners));
 
   return;
 }
@@ -81,5 +80,5 @@ Pocket::postProcess(PostProcessor& pp)
 TopoDS_Compound
 Pocket::dumpWires()
 {
-  return pathTree.dumpWires();
+  return pathTree->dumpWires();
 }

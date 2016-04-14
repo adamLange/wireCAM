@@ -24,18 +24,22 @@
 #include <exception>
 #include <stdexcept>
 #include <cmath>
+#include <iostream> //debug
 #define _USE_MATH_DEFINES
 
 
-PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0,
-    const double& alpha1,TopoDS_Wire& outerWire,const double& toolR
+PocketCornerSlice::PocketCornerSlice(Pocket& pocket,
+    const gp_Pnt& pivotPnt,const double& alpha0,
+    const double& alpha1, bool performNow
   ):
+  pocket(pocket),
   pivotPnt(pivotPnt),
-  outerWire(outerWire),
-  r(toolR)
+  alpha0(alpha0),
+  alpha1(alpha1)
 {
-  cc = new BRepAdaptor_HCompCurve(this->outerWire);
-  BRepBuilderAPI_MakeFace mf(outerWire);
+  cc = new BRepAdaptor_HCompCurve(pocket.offsetWire);
+  /*
+  BRepBuilderAPI_MakeFace mf(pocket.offsetWire);
   if (not mf.IsDone())
   {
     throw std::runtime_error("PocketCornerSlice failure to make face");
@@ -47,12 +51,13 @@ PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0
   gp_Vec tang;
   cc->D1(cc->FirstParameter(),pnt,tang);
   gp_Ax1 ax(gp_Pnt(0,0,0),gp_Dir(0,0,1));
-  gp_Pnt checkPnt((tang.Rotated(ax,M_PI/2.).Normalized()*r/5.
+  gp_Pnt checkPnt((tang.Rotated(ax,M_PI/2.).Normalized()*pocket.toolR/5.
       +gp_Vec(pivotPnt.XYZ())).XYZ()
     );
   Extrema_ExtPS ext(checkPnt,BRepAdaptor_Surface(mf.Face()),1e-6,1e-6);
   double min_dsq = -1.0;
   int min_dsq_i;
+  std::cout<<"nb_extrema "<<ext.NbExt()<<std::endl; //debug
   for (int i=1;i<=ext.NbExt();++i)
   {
     double dsq(ext.SquareDistance(i));
@@ -80,7 +85,13 @@ PocketCornerSlice::PocketCornerSlice(const gp_Pnt& pivotPnt,const double& alpha0
         "point landed on face edge when checking outer wire\
          orientation.");
       break;
-  }
+  }*/
+  //std::cout<<"direction "<<wireNormal.Z()<<std::endl;
+  wireNormal = gp_Dir(0,0,1);
+  params.clear();
+  params.push_back(alpha0);
+  params.push_back(alpha1);
+  calc(params,points,alphas);
 }
 
 void 
@@ -129,8 +140,8 @@ PocketCornerSlice::calc(const std::list<double>& params,
     gp_Vec intVec(intPnt.XYZ());
     gp_Vec pivotVec(pivotPnt.XYZ());
     gp_Vec rVec(
-        r*std::cos(*alpha-M_PI/2.),
-        r*std::sin(*alpha-M_PI/2.),
+        pocket.toolR*std::cos(*alpha-M_PI/2.),
+        pocket.toolR*std::sin(*alpha-M_PI/2.),
         0
       );
     gp_Vec toolPosVec(intVec-rVec);

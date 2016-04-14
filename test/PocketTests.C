@@ -3,7 +3,7 @@
 #include "TopoDS_Shape.hxx"
 #include "TopoDS_Face.hxx"
 #include "TopoDS_Wire.hxx"
-//#include "Pocket.h"
+#include "Pocket.h"
 #include "TopExp_Explorer.hxx"
 #include "TopoDS.hxx"
 #include "PathTree.h"
@@ -31,14 +31,18 @@ protected:
   BRepTools bt;
 };
 
-/*
-TEST_F(PocketTest, POCKET_CONST)
+TEST_F(PocketTest, POCKET_SQ)
 {
-  Pocket p1(pocketWire);
-  p1.calculate();
-  bt.Write(p1.dumpWires(),"./PocketTest_POCKET_CONST_Out.brep");
-}*/
+  Pocket p1(pocketWire,0.0,0.0,10.0,-5.0,true,true);
+  bt.Write(p1.dumpWires(),"./PocketTest_POCKET_SQ.brep");
+}
 
+TEST_F(PocketTest, POCKET_RND)
+{
+  Pocket p1(pocketWire,0.0,0.0,10,-5.0,false,true);
+  bt.Write(p1.dumpWires(),"./PocketTest_POCKET_RND.brep");
+}
+/*
 TEST_F(PocketTest,PATHTREE_OUTERCONST)
 {
   double offset = -5;
@@ -54,3 +58,4 @@ TEST_F(PocketTest,PATHTREE_OUTERCONST)
   }
   std::cout<<numWires<<" wires in pt"<<std::endl;
 }
+*/
