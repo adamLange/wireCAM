@@ -6,6 +6,7 @@
 #include "gp_Ax3.hxx"
 
 #include "Geom_Plane.hxx"
+#include "Geom_Curve.hxx"
 
 #include "Extrema_ExtCS.hxx"
 #include "Extrema_POnCurv.hxx"
@@ -15,11 +16,14 @@
 #include "IntTools_FClass2d.hxx"
 
 #include "BRepBuilderAPI_MakeFace.hxx"
+#include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepAdaptor_Surface.hxx"
 #include "Extrema_ExtPS.hxx"
 #include "TopAbs_State.hxx"
 
 #include "Standard_Transient.hxx"
+#include "GeomAPI_PointsToBSpline.hxx"
+#include "TColgp_Array1OfPnt.hxx"
 
 #include <exception>
 #include <stdexcept>
@@ -87,10 +91,28 @@ PocketCornerSlice::PocketCornerSlice(Pocket& pocket,
       break;
   }*/
   //std::cout<<"direction "<<wireNormal.Z()<<std::endl;
-  wireNormal = gp_Dir(0,0,1);
+  wireNormal = gp_Dir(0,0,-1);
+  
+  if (wireNormal.Z() > 0)
+  {
+    while (this->alpha1 < this->alpha0)
+    {
+      this->alpha1 += 2.0*M_PI;
+    }
+  }
+  else
+  {
+    while (this->alpha1 > this->alpha0)
+    {
+      this->alpha1 -= 2.0*M_PI;
+    }
+  }
+
   params.clear();
-  params.push_back(alpha0);
-  params.push_back(alpha1);
+  for (int i = 0; i<=100; ++i)
+  {
+    params.push_back(i*(this->alpha1-this->alpha0)/100.+this->alpha0);
+  }
   calc(params,points,alphas);
 }
 
@@ -112,12 +134,13 @@ PocketCornerSlice::calc(const std::list<double>& params,
   {
 
     gp_Dir tang(std::cos(*alpha),std::sin(*alpha),0);
-    gp_Vec vec_plane_x = tang.Crossed(gp_Vec(wireNormal.XYZ()));
+    gp_Vec vec_plane_x = -1.0*tang.Crossed(gp_Vec(wireNormal.XYZ()));
     gp_Dir dir_plane_x(vec_plane_x.XYZ());
     gp_Ax3 ax(pivotPnt,tang,dir_plane_x);
     Handle(Geom_Plane) pln = new Geom_Plane(ax);
 
-    Extrema_ExtCS inter(cc->GetCurve(),GeomAdaptor_Surface(pln),1e-6,1e-6);
+    Extrema_ExtCS inter(cc->GetCurve(),GeomAdaptor_Surface(pln),
+      1e-6,1e-6);
     // search for the intersection closest to the pivot point
     // with u_c > 0
     int i_min_dist;
@@ -131,13 +154,14 @@ PocketCornerSlice::calc(const std::list<double>& params,
       inter.Points(i,poc,pos);
       double u,v;
       pos.Parameter(u,v);
-      if ((u<min_dist)&(u>0))
+      if (((u<min_dist)&(u>0))|(min_dist < 0))
       {
         min_dist = u;
         intPnt = pos.Value();
       }
     }
     gp_Vec intVec(intPnt.XYZ());
+    std::cout<<intPnt.X()<<" "<<intPnt.Y()<<" "<<intPnt.Z()<<std::endl;
     gp_Vec pivotVec(pivotPnt.XYZ());
     gp_Vec rVec(
         pocket.toolR*std::cos(*alpha-M_PI/2.),
@@ -145,8 +169,29 @@ PocketCornerSlice::calc(const std::list<double>& params,
         0
       );
     gp_Vec toolPosVec(intVec-rVec);
-
     points.push_back(toolPosVec.XYZ());
     alphas.push_back(*alpha);
   }
 }
+
+TopoDS_Shape
+PocketCornerSlice::shape()
+{
+  int low = 1;
+  int high = points.size();
+  TColgp_Array1OfPnt pnts(low,high);
+  int i = 1;
+  for (std::list<gp_Pnt>::iterator it = points.begin();
+      it!=points.end();++it)
+  {
+    pnts.SetValue(i,*it);
+    ++i;
+  }
+  GeomAPI_PointsToBSpline p2b(pnts);
+  Handle(Geom_Curve) curve = p2b.Curve();
+  BRepBuilderAPI_MakeEdge me(curve,curve->FirstParameter(),curve->LastParameter());
+  std::cout<<"HIHEOIlk;;ldafs"<<std::endl;
+  return me.Edge();
+  
+}
+

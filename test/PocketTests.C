@@ -33,7 +33,7 @@ protected:
 
 TEST_F(PocketTest, POCKET_SQ)
 {
-  Pocket p1(pocketWire,0.0,0.0,10.0,-5.0,true,true);
+  Pocket p1(pocketWire,0.0,0.0,5.0,-5.0,true,true);
   bt.Write(p1.dumpWires(),"./PocketTest_POCKET_SQ.brep");
 }
 

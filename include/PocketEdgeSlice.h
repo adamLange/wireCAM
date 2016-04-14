@@ -15,7 +15,7 @@ public:
 
 private:
 
-  TopoDS_Edge& edge;
+  TopoDS_Edge edge;
   double baseTol;
   virtual Slice* emptyCopy();
   virtual void updateGeometry();

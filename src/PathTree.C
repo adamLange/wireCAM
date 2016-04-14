@@ -95,7 +95,7 @@ PathTree::calculate()
     bool flag = true;
     while (flag)
     {
-      double dalpha = std::abs(((*head)->alphas.front())-((*tail)->alphas.back()));
+      double dalpha = std::fmod(std::fabs(((*head)->alphas.front())-((*tail)->alphas.back())),(2*M_PI));
       if (dalpha > M_PI/180.) //need cornerSlice
       {
         gp_Pnt pnt = (*head)->points.front();
@@ -152,7 +152,12 @@ PathTree::dumpWires()
   TopoDS_Compound comp;
   TopoDS_Builder builder;
   builder.MakeCompound(comp);
-  builder.Add(comp,wire);
+  for (std::list<std::unique_ptr<Slice>>::iterator slice = 
+    slices.begin(); slice != slices.end();++slice
+  )
+  {
+    builder.Add(comp,(*slice)->shape());
+  }
   
   std::list<TopoDS_Wire> wires;
   wires.push_back(wire);
@@ -163,7 +168,7 @@ PathTree::dumpWires()
   {
     std::cout<<"iterating over children"<<std::endl;
     TopExp_Explorer exp;
-    for (exp.Init(it->dumpWires(),TopAbs_WIRE);
+    for (exp.Init(it->dumpWires(),TopAbs_COMPOUND);
          exp.More();
          exp.Next()
         )

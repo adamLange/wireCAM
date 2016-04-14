@@ -14,9 +14,10 @@ public:
   PocketCornerSlice(Pocket& pocket, const gp_Pnt& pnt,
     const double& alpha0, const double& alpha1,bool performNow = true
   );
-  //virtual TopoDS_Shape shape();
+  virtual TopoDS_Shape shape();
 
 private:
+
   Pocket& pocket;
   gp_Pnt pivotPnt; //pivot point
   double alpha0,alpha1;
@@ -27,6 +28,7 @@ private:
 
   //virtual Slice* emptyCopy();
   //virtual void updateGeometry();
+
 };
 
 #endif//POCKETCORNERSLICE_H
