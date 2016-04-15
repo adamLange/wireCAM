@@ -32,7 +32,7 @@ TraverseAngleSplitter::evaluate(Slice& slice,
     Handle(Geom_Curve) curve = bt.Curve(slicePtr->edge,u_min,u_max);
     gp_Vec v = -curve->DN(param,1);
     double beta = atan2(v.Y(),v.X());
-    if (fmod(abs(alpha-beta),M_PI) < maxTraverseAngle)
+    if (fmod(abs(alpha-beta),2*M_PI) < maxTraverseAngle)
     {return true;}
     else
     {return false;}

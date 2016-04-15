@@ -46,4 +46,8 @@ SurfaceNormalSplitter::evaluate(
          (y>=yMin)&&(y<=yMax)&&
          (z>=zMin)&&(z<=zMax);
   }
+  else
+  {
+    return true;
+  }
 }

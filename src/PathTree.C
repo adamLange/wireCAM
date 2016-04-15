@@ -22,6 +22,7 @@
 #include "Slice.h"
 
 #include <iostream>
+#include <sstream>
 
 PathTree::PathTree(Pocket& p,TopoDS_Wire& w,
   bool squareCorners,double cornerATol):
@@ -178,4 +179,25 @@ PathTree::dumpWires()
     }
   }
   return comp;
+}
+
+std::string
+PathTree::postProcess(PostProcessor& p)
+{
+  std::stringstream str;
+  /*
+  for (std::list<std::unique_ptr<Slice>>::iterator slice =
+        slices.begin(); slice != slices.end(); ++slice
+    )
+  {
+    str<<p.postProcess(**slice);
+  }
+  */
+  str<<p.postProcess(slices);
+  for (std::list<PathTree>::iterator pt = children.begin();
+       pt != children.end(); ++pt)
+  {
+    str<<pt->postProcess(p);
+  }
+  return str.str();
 }

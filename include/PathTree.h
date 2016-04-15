@@ -6,7 +6,9 @@
 #include "TopoDS_Compound.hxx"
 #include <list>
 #include <memory>
+#include <string>
 #include "Standard_Transient.hxx"
+#include "PostProcessor.h"
 #define _USE_MATH_DEFINES
 
 class Pocket;
@@ -26,6 +28,7 @@ public:
   void calculate();
   //std::list<TopoDS_Wire> dumpWires();
   TopoDS_Compound dumpWires();
+  std::string postProcess(PostProcessor& p);
 
 private:
 

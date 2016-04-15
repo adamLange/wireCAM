@@ -240,6 +240,16 @@ TEST(TEMPLATEENGINE,DOIT){
   engine.run();
 }
 
+TEST(TEMPLATEENGINE,POCKET){
+  ifstream in("./pocket.json");
+  stringstream raw;
+  raw << in.rdbuf();
+  //cout << raw.str() <<endl;
+  in.close();
+  TemplateEngine engine(raw.str());
+  engine.run();
+}
+
 #include "PocketTests.C"
 
 int main(int argc, char **argv) {

@@ -1,6 +1,7 @@
 #include "TemplateEngine.h"
 #include "TargetSurface.h"
 #include "Slice.h"
+#include "Pocket.h"
 #include "Slice3D.h"
 #include "WorkingBoxSplitter.h"
 #include "AlphaJumpMarker.h"
@@ -18,7 +19,10 @@
 #include "BRep_Tool.hxx"
 #include "BRep_Builder.hxx"
 #include "PostProcessor.h"
+#include "TopoDS.hxx"
 #include <stdexcept>
+#include "TopExp_Explorer.hxx"
+
 #define _USE_MATH_DEFINES
 
 TemplateEngine::TemplateEngine(const std::string& input)
@@ -224,13 +228,50 @@ TemplateEngine::run()
     ofstream geomFile(geomFileName);
     BRepTools bt;
     bt.Write(outShape,geomFile);
-
+    geomFile.close();
   }
-  else if (root["class"]=="Pocket")
+  else if (root["class"].asString()=="Pocket")
   {
-    throw runtime_error("Pocket not implemented in TemplateEngine");
-  }
-  //make transitions
+    BRepTools bt;
+    BRep_Builder bb;
+    TopoDS_Shape shape;
+    std::string filepath = root["file"].asString();
+    double offset(root["offset"].asFloat());
+    double zOffset(root["zOffset"].asFloat());
+    double toolR(root["toolR"].asFloat());
+    double step(root["step"].asFloat());
+    bool squareCorners(root["squareCorners"].asBool());
+    bool orderOut(root["orderOut"].asBool());
+
+    double lScale = root["postProcessor"]["linearScale"].asFloat();
+    double aScale = root["postProcessor"]["angularScale"].asFloat();
+    double rapidZ = root["postProcessor"]["rapidZ"].asFloat();
+
+    PostProcessor pp(rapidZ,lScale,aScale);
+
+    bt.Read(shape,filepath.c_str(),bb);
+    std::stringstream str;
+    TopExp_Explorer exp;
+    TopoDS_Compound comp;
+    bb.MakeCompound(comp);
+    for (exp.Init(shape,TopAbs_WIRE);exp.More();exp.Next())
+    {
+      std::cout<<"Wire!!"<<std::endl;
+      TopoDS_Wire w = TopoDS::Wire(exp.Current());
+      Pocket p(w,offset,zOffset,toolR,step,squareCorners,orderOut);
+      str<<p.postProcess(pp);
+      bb.Add(comp,p.dumpWires());
+    }
+    string gcodeFile = root["output"]["machineCode"].asString();
+    ofstream outFile(gcodeFile);
+    outFile << str.str();
+    outFile.close();
+
+    string geomFileName = root["output"]["geometry"].asString();
+    ofstream geomFile(geomFileName.c_str());
+    bt.Write(comp,geomFile);
+    geomFile.close();
+  } //make transitions
 
   return;
 }

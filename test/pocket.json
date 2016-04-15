@@ -1,0 +1,20 @@
+{
+  "class":"Pocket",
+  "file":"pocketFace.brep", //file containing geometry
+  "offset":0, //optional offset
+  "zOffset":0, //optional z offset
+  "squareCorners":false,
+  "toolR":10, // tool radius
+  "step":-10,
+  "orderOut":true,
+  "PostProcessor":{
+    "linearScale":0.393700787,
+    "angularScale":57.295779513,
+    "rapidZ":48.26
+  },
+  "output":{
+    "geometry":"./pocket_out.brep",
+    "machineCode":"./pocket_out.nc"
+  }
+}
+%

@@ -41,6 +41,8 @@ TEST_F(PocketTest, POCKET_RND)
 {
   Pocket p1(pocketWire,0.0,0.0,10,-5.0,false,true);
   bt.Write(p1.dumpWires(),"./PocketTest_POCKET_RND.brep");
+  PostProcessor pp (50,1/25.4,180/M_PI);
+  std::cout<<p1.postProcess(pp)<<std::endl;
 }
 /*
 TEST_F(PocketTest,PATHTREE_OUTERCONST)

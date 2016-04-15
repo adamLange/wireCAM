@@ -74,7 +74,7 @@ Pocket::calculate()
 std::string
 Pocket::postProcess(PostProcessor& pp)
 {
-  return "poof";
+  return pathTree->postProcess(pp);
 }
 
 TopoDS_Compound
