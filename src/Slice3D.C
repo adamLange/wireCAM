@@ -89,27 +89,6 @@ void Slice3D::calc(const list<double>& params,
        ++it)
   {
     gp_Pnt pnt = curve->Value(*it);
-    //BRepBuilderAPI_MakeVertex mv(pnt);
-    //TopoDS_Vertex v = mv.Vertex();
-    //BRepExtrema_ExtPF extr(v,face);
-    //int minExtIndex = -1;
-    //double minDSq = -1234.0;
-    //for (int i = 1; i <= extr.NbExt(); ++i)
-    //{
-    //  double di = extr.SquareDistance(i);
-    //  if ((di<minDSq)|(minDSq < 0))
-    //  {
-    //    minExtIndex = i;
-    //    minDSq = di;
-    //  }
-    //}
-    //double u_s,v_s,alpha;
-    //extr.Parameter(minExtIndex,u_s,v_s);
-    //gp_Vec du, dv, norm;
-    //gp_Pnt pnt_s;
-
-    //surface->D1(u_s,v_s,pnt_s,du,dv);
-    //norm = dv.Crossed(du).Normalized();
     gp_Dir norm(surfaceNormal(*it));
 
     double alpha = atan2(norm.Y(),norm.X());
