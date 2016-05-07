@@ -82,7 +82,6 @@ void Slice3D::calc(const list<double>& params,
   BRep_Tool bt;
   double p0,p1;
   Handle(Geom_Curve) curve = bt.Curve(edge,p0,p1);
-  //Handle(Geom_Surface) surface = bt.Surface(face);
   
   for (list<double>::const_iterator it = params.begin();
        it != params.end();
