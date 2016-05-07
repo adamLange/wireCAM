@@ -26,7 +26,7 @@ public:
   TopoDS_Edge edge;
   TopoDS_Face face;
 
-private:
+protected:
 
   Slice* emptyCopy();
 
