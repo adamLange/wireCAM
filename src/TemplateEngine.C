@@ -256,7 +256,6 @@ TemplateEngine::run()
     bb.MakeCompound(comp);
     for (exp.Init(shape,TopAbs_WIRE);exp.More();exp.Next())
     {
-      std::cout<<"Wire!!"<<std::endl;
       TopoDS_Wire w = TopoDS::Wire(exp.Current());
       Pocket p(w,offset,zOffset,toolR,step,squareCorners,orderOut);
       str<<p.postProcess(pp);
