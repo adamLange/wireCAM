@@ -3,6 +3,7 @@
 #include "Slice.h"
 #include "Pocket.h"
 #include "Slice3D.h"
+#include "RoundWireSlice.h"
 #include "WorkingBoxSplitter.h"
 #include "AlphaJumpMarker.h"
 #include "TraverseAngleSplitter.h"
@@ -21,6 +22,7 @@
 #include "PostProcessor.h"
 #include "TopoDS.hxx"
 #include <stdexcept>
+#include <exception>
 #include "TopExp_Explorer.hxx"
 
 #define _USE_MATH_DEFINES
@@ -36,7 +38,8 @@ TemplateEngine::run()
 {
   //read in the tools
   //create the slices
-  if (root["class"]=="SquareWireCarve")
+  if ((root["class"]=="SquareWireCarve")
+     |(root["class"]=="RoundWireCarve"))
   {
 
     //std::cout<<root["file"]<<std::endl;
@@ -65,7 +68,19 @@ TemplateEngine::run()
          edge_it != edges.end();
          ++edge_it)
     {
-      slices.emplace_back(new Slice3D(*edge_it,surf.face));
+      if (root["class"]=="SquareWireCarve")
+      {
+        slices.emplace_back(new Slice3D(*edge_it,surf.face));
+      }
+      else if (root["class"]=="RoundWireCarve")
+      {
+        //hardcode !
+        slices.emplace_back(new RoundWireSlice(*edge_it,surf.face,10));
+      }
+      else
+      {
+        throw std::runtime_error("Unsupported slice type");
+      }
     }
 
     std::cout<<"  "<<slices.size()<<" slices created"<< std::endl;

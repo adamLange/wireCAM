@@ -3,6 +3,7 @@
 #include "gp_Ax2.hxx"
 #include "gp_Dir.hxx"
 #include "gp_Trsf.hxx"
+#include "gp_Circ.hxx"
 #include "BRep_Tool.hxx"
 #include "Geom_Curve.hxx"
 #include "TopoDS_Builder.hxx"
@@ -11,6 +12,8 @@
 #include "Geom_Circle.hxx"
 #include "Handle_Geom_Circle.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
+#include "BRepBuilderAPI_MakeVertex.hxx"
+#include "TopoDS_Edge.hxx"
 
 #define _USE_MATH_DEFINES
 using namespace std;
@@ -35,7 +38,7 @@ RoundWireSlice::RoundWireSlice(const TopoDS_Edge& edge,
 Slice*
 RoundWireSlice::emptyCopy()
 {
-  return new RoundWireSlice(this->edge,this->face,false,this->baseTol);
+  return new RoundWireSlice(this->edge,this->face,this->toolRadius,flipSurface,false,this->baseTol);
 }
 
 void
@@ -58,28 +61,40 @@ RoundWireSlice::calc(
     gp_Pnt pnt;
     gp_Vec travelVec;
     curve->D1(*it,pnt,travelVec);
+    travelVec.Normalize();
+    gp_Vec pntVec(pnt.XYZ());
     gp_Dir norm(surfaceNormal(*it));
     if (flipSurface)
     {
       norm = -norm;
     }
     gp_Vec s(norm.XYZ());
+
+    gp_Vec uPrime = (travelVec.Crossed(gp_Vec(0,0,-1))).Normalized();
+    gp_Vec vPrime(0,0,1);
+
+    gp_Vec sPrime = s.Dot(uPrime)*uPrime + s.Dot(vPrime)*vPrime;
+
     double alpha = atan2(travelVec.Y(),travelVec.X());
-    gp_Ax1 ax(gp_Pnt(0,0,0),gp_Dir(0,0,1));
-    gp_Trsf trsf;
-    trsf.SetRotation(ax,alpha);
-    gp_Vec xPrime(1,0,0);
-    xPrime.Transform(trsf);
-    gp_Vec zPrime(0,0,1);
+    //gp_Ax1 ax(gp_Pnt(0,0,0),gp_Dir(0,0,1));
+    //gp_Trsf trsf;
+    //trsf.SetRotation(ax,alpha);
+    //gp_Vec yPrime(0,1,0);
+    //yPrime.Transform(trsf);
+    //gp_Vec zPrime(0,0,1);
     
-    gp_Vec sPrime = gp_Vec(s.Dot(xPrime),s.Dot(zPrime),0);
-    sPrime.Transform(trsf);
+    //gp_Vec sPrime = gp_Vec(s.Dot(yPrime),s.Dot(zPrime),0);
+    //sPrime.Transform(trsf);
     sPrime *= toolRadius;
 
-    gp_Vec pntVec(pnt.XYZ());
-    pntVec += sPrime;
-    points.emplace_back(pntVec.XYZ());
+    points.emplace_back((pntVec + sPrime).XYZ());
+
+    //gp_Vec centerVec((s*toolRadius+pntVec).XYZ());
+    //gp_Vec surfToCenter = centerVec - pntVec;
+    //std::cout<<surfToCenter.Magnitude()<<std::endl;
+    //points.emplace_back(centerVec.XYZ());
     alphas.push_back(alpha);
+    
   }
 }
 
@@ -100,19 +115,26 @@ RoundWireSlice::shape()
          ++it_alphas
       )
   {
+    /*
     gp_Ax1 zAxis(gp_Pnt(0,0,0),gp_Dir(0,0,1));
     gp_Trsf trsf;
     trsf.SetRotation(zAxis,*it_alphas);
-    gp_Dir planeUDir(1,0,0);
-    planeUDir.Transform(trsf);
+    gp_Dir travelDir(1,0,0);
+    gp_Dir planeVDir(0,1,0);
+    travelDir.Transform(trsf);
+    planeVDir.Transform(trsf);
     
-    gp_Ax2 ax(*it_points,planeUDir,gp_Dir(0,0,1));
+    gp_Ax2 ax(*it_points,travelDir,planeVDir);
+    //gp_Ax2 ax(*it_points,gp_Dir(1,0,0),gp_Dir(0,1,0));
+    gp_Circ circ(ax,toolRadius);
 
-    Geom_Circle circ(ax,toolRadius);
-    Handle(Geom_Circle) hcirc(&circ);
-    BRepBuilderAPI_MakeEdge me(hcirc,M_PI,2*M_PI);
-
-    builder.Add(comp,me.Edge());
+    //Handle(Geom_Circle) circ = new Geom_Circle(ax,toolRadius);
+    BRepBuilderAPI_MakeEdge me(circ,0,2*M_PI);
+    TopoDS_Edge edge = me.Edge();
+    builder.Add(comp,edge);
+    */
+    BRepBuilderAPI_MakeVertex mv(*it_points);
+    builder.Add(comp,mv.Vertex());
   }
   return comp;
 }

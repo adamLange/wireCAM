@@ -230,7 +230,7 @@ TEST(JSONCPP,ParseJson){
   in.close();
 }
 
-TEST(TEMPLATEENGINE,DOIT){
+TEST(TEMPLATEENGINE,SQUARE){
   ifstream in("./fullStack.json");
   stringstream raw;
   raw << in.rdbuf();
@@ -245,6 +245,15 @@ TEST(TEMPLATEENGINE,POCKET){
   stringstream raw;
   raw << in.rdbuf();
   //cout << raw.str() <<endl;
+  in.close();
+  TemplateEngine engine(raw.str());
+  engine.run();
+}
+
+TEST(TEMPLATEENGINE,ROUND){
+  ifstream in("./roundWire.json");
+  stringstream raw;
+  raw << in.rdbuf();
   in.close();
   TemplateEngine engine(raw.str());
   engine.run();

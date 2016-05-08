@@ -1,5 +1,6 @@
 #include "SurfaceNormalSplitter.h"
 #include "Slice3D.h"
+#include "RoundWireSlice.h"
 
 SurfaceNormalSplitter::SurfaceNormalSplitter()
 {
@@ -35,10 +36,21 @@ SurfaceNormalSplitter::evaluate(
     const double& alpha
   )
 {
-  if (typeid(slice)==typeid(Slice3D))
+  if (typeid(slice)==typeid(Slice3D)|typeid(slice)==typeid(RoundWireSlice))
   {
     Slice3D* s3d = dynamic_cast<Slice3D*>(&slice);
     gp_Dir normal(s3d->surfaceNormal(param));
+    double x = normal.X();
+    double y = normal.Y();
+    double z = normal.Z();
+    return (x>=xMin)&&(x<=xMax)&&
+         (y>=yMin)&&(y<=yMax)&&
+         (z>=zMin)&&(z<=zMax);
+  }
+  else if (typeid(slice)==typeid(RoundWireSlice))
+  {
+    RoundWireSlice* rndWireSlice = dynamic_cast<RoundWireSlice*>(&slice);
+    gp_Dir normal(rndWireSlice->surfaceNormal(param));
     double x = normal.X();
     double y = normal.Y();
     double z = normal.Z();

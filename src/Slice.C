@@ -160,6 +160,7 @@ void
 Slice::calc(const list<double>& params, list<gp_Pnt>& points,
   list<double>& alphas)
 {
+  std::cout<<"yousa should not besa here"<<std::endl;
   points.clear();
   alphas.clear();
   for (list<double>::const_iterator it = params.begin();
