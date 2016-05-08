@@ -64,23 +64,30 @@ TemplateEngine::run()
     std::cout<< "Creating slices..." << std::endl;
 
     std::list<std::unique_ptr<Slice>> slices;
-    for (std::list<TopoDS_Edge>::iterator edge_it = edges.begin();
+
+    if (root["class"]=="SquareWireCarve")
+    {
+      for (std::list<TopoDS_Edge>::iterator edge_it = edges.begin();
+           edge_it != edges.end();
+           ++edge_it)
+      {
+          slices.emplace_back(new Slice3D(*edge_it,surf.face));
+      }
+    }
+    else if (root["class"]=="RoundWireCarve")
+    {
+      double toolRadius = root["toolRadius"].asFloat();
+      bool flip = root["flipSurface"].asBool();
+      for (std::list<TopoDS_Edge>::iterator edge_it = edges.begin();
          edge_it != edges.end();
          ++edge_it)
+      {
+        slices.emplace_back(new RoundWireSlice(*edge_it,surf.face,toolRadius,flip));
+      }
+    }
+    else
     {
-      if (root["class"]=="SquareWireCarve")
-      {
-        slices.emplace_back(new Slice3D(*edge_it,surf.face));
-      }
-      else if (root["class"]=="RoundWireCarve")
-      {
-        //hardcode !
-        slices.emplace_back(new RoundWireSlice(*edge_it,surf.face,10));
-      }
-      else
-      {
-        throw std::runtime_error("Unsupported slice type");
-      }
+      throw std::runtime_error("Unsupported slice type");
     }
 
     std::cout<<"  "<<slices.size()<<" slices created"<< std::endl;
