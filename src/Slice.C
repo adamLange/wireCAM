@@ -113,17 +113,34 @@ Slice::refine(Marker& marker)
   ++alphas_head;
   
   bool converged = false;
-  while(params_head != params.end())
+  int iterations(0);
+  bool failed = false;
+  while((params_head != params.end()) && (!failed))
   {
-    while(!converged)
+    iterations = 0;
+    while(!converged&&(!failed))
     {
       //cout<<"  parameters "<<*params_tail<<" -> "<<*params_head<<endl;
+      //std::cout<<"iterations: "<<iterations<<std::endl;
       converged = !marker.evaluate(
         *this,
         *params_head,*points_head,*alphas_head,
         *params_tail,*points_tail,*alphas_tail
       );
-      if (!converged)
+      if (iterations > 100)
+      {
+        std::cout<<"Warning! 100 iterations exceded with no\
+ convergence, refinement of this slice terminated."
+          <<std::endl;
+        failed = true;
+      }
+      if ((*params_head - *params_tail)<1e-6)
+      {
+        failed = true;
+        std::cout<<"Warning! refinement terminated on delta\
+ parameter less than 1e-6"<<std::endl;
+      }
+      if ((!converged) && (!failed))
       {
         //add a point in the middle
         //move the head back to it
@@ -139,6 +156,7 @@ Slice::refine(Marker& marker)
         --points_head;
         --alphas_head;
       }
+      ++iterations;
     }
     
     ++params_head;
@@ -160,7 +178,6 @@ void
 Slice::calc(const list<double>& params, list<gp_Pnt>& points,
   list<double>& alphas)
 {
-  std::cout<<"yousa should not besa here"<<std::endl;
   points.clear();
   alphas.clear();
   for (list<double>::const_iterator it = params.begin();
