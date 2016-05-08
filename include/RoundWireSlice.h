@@ -8,9 +8,11 @@ class RoundWireSlice : public Slice3D
 public:
 
   RoundWireSlice(const TopoDS_Edge& edge, const TopoDS_Face& face,
-      const bool flipSurface = false,
+      const double toolRadius, const bool flipSurface = false,
       const bool performNow=true, const double baseTol=0.05
     );
+
+  virtual TopoDS_Shape shape();
 
 protected:
 

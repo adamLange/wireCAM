@@ -1,15 +1,29 @@
 #include "RoundWireSlice.h"
 #include "gp_Ax1.hxx"
+#include "gp_Ax2.hxx"
+#include "gp_Dir.hxx"
+#include "gp_Trsf.hxx"
 #include "BRep_Tool.hxx"
 #include "Geom_Curve.hxx"
+#include "TopoDS_Builder.hxx"
+#include "TopoDS_Compound.hxx"
+#include "gp_Ax2.hxx"
+#include "Geom_Circle.hxx"
+#include "Handle_Geom_Circle.hxx"
+#include "BRepBuilderAPI_MakeEdge.hxx"
+
+#define _USE_MATH_DEFINES
 using namespace std;
 
 RoundWireSlice::RoundWireSlice(const TopoDS_Edge& edge,
-   const TopoDS_Face& face, const bool flipSurface,
+   const TopoDS_Face& face, 
+   const double toolRadius,
+   const bool flipSurface,
    const bool performNow, const double baseTol
   ):
   Slice3D(edge,face,performNow,baseTol),
-  flipSurface(flipSurface)
+  flipSurface(flipSurface),
+  toolRadius(toolRadius)
 {
   if (performNow)
   {
@@ -67,4 +81,38 @@ RoundWireSlice::calc(
     points.emplace_back(pntVec.XYZ());
     alphas.push_back(alpha);
   }
+}
+
+TopoDS_Shape
+RoundWireSlice::shape()
+{
+  TopoDS_Compound comp;
+  TopoDS_Builder builder;
+  builder.MakeCompound(comp);
+
+  list<double>::iterator it_params = params.begin();
+  list<gp_Pnt>::iterator it_points = points.begin();
+  list<double>::iterator it_alphas = alphas.begin();
+
+  for (;it_params != params.end();
+         ++it_params,
+         ++it_points,
+         ++it_alphas
+      )
+  {
+    gp_Ax1 zAxis(gp_Pnt(0,0,0),gp_Dir(0,0,1));
+    gp_Trsf trsf;
+    trsf.SetRotation(zAxis,*it_alphas);
+    gp_Dir planeUDir(1,0,0);
+    planeUDir.Transform(trsf);
+    
+    gp_Ax2 ax(*it_points,planeUDir,gp_Dir(0,0,1));
+
+    Geom_Circle circ(ax,toolRadius);
+    Handle(Geom_Circle) hcirc(&circ);
+    BRepBuilderAPI_MakeEdge me(hcirc,M_PI,2*M_PI);
+
+    builder.Add(comp,me.Edge());
+  }
+  return comp;
 }
