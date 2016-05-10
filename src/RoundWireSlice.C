@@ -116,7 +116,6 @@ RoundWireSlice::shape()
          ++it_alphas
       )
   {
-    /*
     gp_Ax1 zAxis(gp_Pnt(0,0,0),gp_Dir(0,0,1));
     gp_Trsf trsf;
     trsf.SetRotation(zAxis,*it_alphas);
@@ -133,9 +132,9 @@ RoundWireSlice::shape()
     BRepBuilderAPI_MakeEdge me(circ,0,2*M_PI);
     TopoDS_Edge edge = me.Edge();
     builder.Add(comp,edge);
-    */
-    BRepBuilderAPI_MakeVertex mv(*it_points);
-    builder.Add(comp,mv.Vertex());
+    //BRepBuilderAPI_MakeVertex mv(*it_points);
+    //builder.Add(comp,mv.Vertex());
   }
+  builder.Add(comp,this->edge);
   return comp;
 }
