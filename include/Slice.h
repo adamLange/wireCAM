@@ -25,6 +25,11 @@ public:
 
   virtual TopoDS_Shape shape();
 
+  double alphaModulator(const double& alpha0, const double& alpha1);
+  void alphaSplice(std::list<double>::iterator& it,
+    std::list<double> alphaList);
+  void alphaPushBack(const double& alpha);
+
   std::list<double> params;
   std::list<gp_Pnt> points;
   std::list<double> alphas;

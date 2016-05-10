@@ -170,7 +170,7 @@ PocketCornerSlice::calc(const std::list<double>& params,
       );
     gp_Vec toolPosVec(intVec-rVec);
     points.push_back(toolPosVec.XYZ());
-    alphas.push_back(*alpha);
+    alphaPushBack(*alpha);
   }
 }
 

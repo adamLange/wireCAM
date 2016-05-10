@@ -49,7 +49,7 @@ Slice::split(Splitter& splitter)
   {
     activeSlice->params.push_back(*it_params);
     activeSlice->points.push_back(*it_points);
-    activeSlice->alphas.push_back(*it_alphas);
+    activeSlice->alphaPushBack(*it_alphas);
   }
   ++it_params;
   ++it_points;
@@ -68,7 +68,7 @@ Slice::split(Splitter& splitter)
       {
         activeSlice->params.push_back(*it_params);
         activeSlice->points.push_back(*it_points);
-        activeSlice->alphas.push_back(*it_alphas);
+        activeSlice->alphaPushBack(*it_alphas);
       }
       continue;
     }
@@ -78,7 +78,7 @@ Slice::split(Splitter& splitter)
       {
         activeSlice->params.push_back(*it_params);
         activeSlice->points.push_back(*it_points);
-        activeSlice->alphas.push_back(*it_alphas);
+        activeSlice->alphaPushBack(*it_alphas);
       }
       else //end of a slice
       {
@@ -151,7 +151,7 @@ Slice::refine(Marker& marker)
         calc(newParams,newPoints,newAlphas);
         params.splice(params_head,newParams);
         points.splice(points_head,newPoints);
-        alphas.splice(alphas_head,newAlphas);
+        alphaSplice(alphas_head,newAlphas);
         --params_head;
         --points_head;
         --alphas_head;
@@ -185,7 +185,7 @@ Slice::calc(const list<double>& params, list<gp_Pnt>& points,
        ++it)
   {
     points.push_back(gp_Pnt(0,0,0));
-    alphas.push_back(0.);
+    alphaPushBack(0.);
   }
 }
 
@@ -200,4 +200,50 @@ gp_Dir
 Slice::surfaceNormal(const double& u)
 {
   return gp_Dir(0,0,1);
+}
+
+double
+Slice::alphaModulator(const double& alpha0, const double& alpha1)
+{
+  double delta1 = fmod((alpha1-alpha0),2.0*M_PI);
+  double delta2 = fmod((alpha1-alpha0+2.0*M_PI),2.0*M_PI);
+  double delta3 = fmod((alpha1-alpha0-2.0*M_PI),2.0*M_PI);
+  double delta;
+
+  if ((abs(delta1) < abs(delta2))&&(abs(delta1) < abs(delta3)))
+  {
+    delta = delta1;
+  }
+  else if ((abs(delta2) < abs(delta1))&&(abs(delta2) < abs(delta3)))
+  {
+    delta = delta2;
+  }
+  else
+  {
+    delta = delta3;
+  }
+  return alpha0 + delta;
+}
+
+void
+Slice::alphaSplice(list<double>::iterator& postSplice,
+  list<double> alphaList)
+{
+  list<double>::iterator preSplice = postSplice;
+  --preSplice;
+  list<double>::iterator head = alphaList.begin();
+  list<double>::iterator tail = alphaList.begin();
+  *head = alphaModulator(*preSplice,*head);
+  ++head;
+  for (; head != alphaList.end(); ++head, ++tail)
+  {
+    *head = alphaModulator(*tail,*head);
+  }
+  alphas.splice(postSplice,alphaList);
+}
+
+void
+Slice::alphaPushBack(const double& alpha)
+{
+  alphas.push_back(alphaModulator(alphas.back(),alpha));
 }

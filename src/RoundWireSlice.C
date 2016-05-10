@@ -93,7 +93,7 @@ RoundWireSlice::calc(
     //gp_Vec surfToCenter = centerVec - pntVec;
     //std::cout<<surfToCenter.Magnitude()<<std::endl;
     //points.emplace_back(centerVec.XYZ());
-    alphas.push_back(alpha);
+    alphaPushBack(alpha);
     
   }
 }

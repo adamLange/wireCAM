@@ -93,7 +93,7 @@ void Slice3D::calc(const list<double>& params,
     double alpha = atan2(norm.Y(),norm.X());
 
     points.push_back(pnt);
-    alphas.push_back(alpha);
+    alphaPushBack(alpha);
   }
 }
 
