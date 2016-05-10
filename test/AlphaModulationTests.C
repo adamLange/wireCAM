@@ -27,12 +27,14 @@ TEST(AlphaModulator,modulate)
         delta_mod =  delta + *mod_i*2*M_PI;
         alpha1 = alpha0 + delta;
         alpha1_mod = alpha0 + delta_mod;
-        //EXPECT_EQ(slice.alphaModulator(alpha0,alpha1_mod),alpha1);
-        EXPECT_TRUE(abs(slice.alphaModulator(alpha0,alpha1_mod)-alpha1)<1e-6)<<
-        "  alpha0: "<<alpha0<<std::endl
-        <<"  alpha1: "<<alpha1<<std::endl
-        <<"  alpha1_mod: "<<alpha1_mod<<std::endl
-        <<"  alphaModulator:"<<slice.alphaModulator(alpha0,alpha1_mod)<<std::endl;
+        EXPECT_LT(delta,M_PI);
+        EXPECT_TRUE(
+          abs(slice.alphaModulator(alpha0,alpha1_mod)-alpha1)<1e-6)
+          <<"  alpha0: "<<alpha0<<std::endl
+          <<"  alpha1: "<<alpha1<<std::endl
+          <<"  alpha1_mod: "<<alpha1_mod<<std::endl
+          <<"  alphaModulator:"<<slice.alphaModulator(alpha0,alpha1_mod)
+          <<std::endl;
       }
     }
   }
