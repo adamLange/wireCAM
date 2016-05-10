@@ -62,6 +62,7 @@ RoundWireSlice::calc(
     gp_Pnt pnt;
     gp_Vec travelVec;
     curve->D1(*it,pnt,travelVec);
+    double alpha = atan2(travelVec.Y(),travelVec.X());
     travelVec.Normalize();
     gp_Vec pntVec(pnt.XYZ());
     gp_Dir norm(surfaceNormal(*it));
@@ -76,7 +77,6 @@ RoundWireSlice::calc(
 
     gp_Vec sPrime = s.Dot(uPrime)*uPrime + s.Dot(vPrime)*vPrime;
 
-    double alpha = atan2(travelVec.Y(),travelVec.X());
     //gp_Ax1 ax(gp_Pnt(0,0,0),gp_Dir(0,0,1));
     //gp_Trsf trsf;
     //trsf.SetRotation(ax,alpha);
@@ -94,8 +94,7 @@ RoundWireSlice::calc(
     //gp_Vec surfToCenter = centerVec - pntVec;
     //std::cout<<surfToCenter.Magnitude()<<std::endl;
     //points.emplace_back(centerVec.XYZ());
-    alphaPushBack(alpha);
-    
+    alphas.push_back(alpha);
   }
 }
 
