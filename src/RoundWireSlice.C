@@ -124,15 +124,17 @@ RoundWireSlice::shape()
     planeVDir.Transform(trsf);
     
     gp_Ax2 ax(*it_points,travelDir,planeVDir);
-    //gp_Ax2 ax(*it_points,gp_Dir(1,0,0),gp_Dir(0,1,0));
     gp_Circ circ(ax,toolRadius);
 
-    //Handle(Geom_Circle) circ = new Geom_Circle(ax,toolRadius);
-    BRepBuilderAPI_MakeEdge me(circ,0,2*M_PI);
+    BRepBuilderAPI_MakeEdge me(circ,M_PI,2*M_PI);
     TopoDS_Edge edge = me.Edge();
     builder.Add(comp,edge);
-    //BRepBuilderAPI_MakeVertex mv(*it_points);
-    //builder.Add(comp,mv.Vertex());
+
+    gp_Vec toolCenterVec(it_points->XYZ());
+    gp_Vec alphaIndicatorVec(toolCenterVec
+      +gp_Vec(0,0,5*toolRadius**it_alphas/(2*M_PI)));
+    BRepBuilderAPI_MakeEdge me1(*it_points,alphaIndicatorVec.XYZ());
+    builder.Add(comp,me1.Edge());
   }
   builder.Add(comp,this->edge);
   return comp;
