@@ -32,6 +32,7 @@ RoundWireSlice::RoundWireSlice(const TopoDS_Edge& edge,
   {
     performBaseTessilation(params,points);
     calc(params,points,alphas);
+    orderAlphas();
   }
 }
 

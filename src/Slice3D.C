@@ -35,6 +35,7 @@ Slice3D::Slice3D(const TopoDS_Edge& edge, const TopoDS_Face& face,
     //list<gp_Pnt> points;
     performBaseTessilation(params,points);
     calc(params,points,alphas);
+    orderAlphas();
   }
 }
 

@@ -247,3 +247,15 @@ Slice::alphaPushBack(const double& alpha)
 {
   alphas.push_back(alphaModulator(alphas.back(),alpha));
 }
+
+void
+Slice::orderAlphas()
+{
+  list<double>::iterator head = alphas.begin();
+  list<double>::iterator tail = alphas.begin();
+  ++head;
+  for (; head != alphas.end(); ++head, ++tail)
+  {
+    *head = alphaModulator(*tail,*head);
+  }
+}
