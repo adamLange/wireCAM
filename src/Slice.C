@@ -224,7 +224,7 @@ Slice::alphaModulator(const double& alpha0, const double& alpha1)
 }
 
 void
-Slice::alphaSplice(list<double>::iterator& postSplice,
+Slice::alphaSplice(list<double>::iterator postSplice,
   list<double> alphaList)
 {
   list<double>::iterator preSplice = postSplice;
