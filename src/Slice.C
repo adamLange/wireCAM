@@ -205,22 +205,20 @@ Slice::surfaceNormal(const double& u)
 double
 Slice::alphaModulator(const double& alpha0, const double& alpha1)
 {
-  double delta1 = fmod((alpha1-alpha0),2.0*M_PI);
-  double delta2 = fmod((alpha1-alpha0+2.0*M_PI),2.0*M_PI);
-  double delta3 = fmod((alpha1-alpha0-2.0*M_PI),2.0*M_PI);
+  double remainder = fmod((alpha1-alpha0),2.0*M_PI);
   double delta;
 
-  if ((abs(delta1) < abs(delta2))&&(abs(delta1) < abs(delta3)))
+  if (abs(remainder) < M_PI)
   {
-    delta = delta1;
+    delta = remainder;
   }
-  else if ((abs(delta2) < abs(delta1))&&(abs(delta2) < abs(delta3)))
+  else if (remainder > M_PI)
   {
-    delta = delta2;
+    delta = remainder - 2*M_PI;
   }
   else
   {
-    delta = delta3;
+    delta = remainder + 2*M_PI;
   }
   return alpha0 + delta;
 }
