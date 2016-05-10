@@ -7,8 +7,10 @@ TEST(AlphaModulator,modulate)
   std::vector<double> alpha0_arr = {-M_PI,-3*M_PI/4.0,-M_PI/2.0,
     -M_PI/4.0,0,M_PI/4.0,M_PI/2.0,3*M_PI/4.0,M_PI};
 
-  std::vector<double> delta_arr = {-M_PI,-3*M_PI/4.0,-M_PI/2.0,-M_PI/4.0
-    ,0,M_PI/4.0,M_PI/2.0,3*M_PI/4.0,M_PI};
+  //std::vector<double> delta_arr = {-M_PI,-3*M_PI/4.0,-M_PI/2.0,-M_PI/4.0
+   // ,0,M_PI/4.0,M_PI/2.0,3*M_PI/4.0,M_PI};
+  std::vector<double> delta_arr = {-3*M_PI/4.0,-M_PI/2.0,-M_PI/4.0
+    ,0,M_PI/4.0,M_PI/2.0,3*M_PI/4.0};
   std::vector<double>  mod = {-2,-1,0,1,2};
   double delta, delta_mod, alpha1_mod;
   for (std::vector<double>::iterator alpha0_i = alpha0_arr.begin();
@@ -25,7 +27,12 @@ TEST(AlphaModulator,modulate)
         delta_mod =  delta + *mod_i*2*M_PI;
         alpha1 = alpha0 + delta;
         alpha1_mod = alpha0 + delta_mod;
-        EXPECT_EQ(slice.alphaModulator(alpha0,alpha1_mod),alpha1);
+        //EXPECT_EQ(slice.alphaModulator(alpha0,alpha1_mod),alpha1);
+        EXPECT_TRUE(abs(slice.alphaModulator(alpha0,alpha1_mod)-alpha1)<1e-6)<<
+        "  alpha0: "<<alpha0<<std::endl
+        <<"  alpha1: "<<alpha1<<std::endl
+        <<"  alpha1_mod: "<<alpha1_mod<<std::endl
+        <<"  alphaModulator:"<<slice.alphaModulator(alpha0,alpha1_mod)<<std::endl;
       }
     }
   }
