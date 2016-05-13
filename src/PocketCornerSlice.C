@@ -17,6 +17,7 @@
 
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
+#include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepAdaptor_Surface.hxx"
 #include "Extrema_ExtPS.hxx"
 #include "TopAbs_State.hxx"
@@ -174,6 +175,7 @@ PocketCornerSlice::calc(const std::list<double>& params,
   }
 }
 
+/*
 TopoDS_Shape
 PocketCornerSlice::shape()
 {
@@ -194,4 +196,19 @@ PocketCornerSlice::shape()
   return me.Edge();
   
 }
+*/
 
+TopoDS_Shape
+PocketCornerSlice::shape()
+{
+  BRepBuilderAPI_MakeWire mw;
+  std::list<gp_Pnt>::iterator head = points.begin();
+  std::list<gp_Pnt>::iterator tail = points.begin();
+  ++head;
+  for (;head!=points.end();++head,++tail)
+  {
+    BRepBuilderAPI_MakeEdge me(*tail,*head);
+    mw.Add(me.Edge());
+  }
+  return mw.Wire();
+}
