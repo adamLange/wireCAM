@@ -1,15 +1,15 @@
-#ifndef POCKETEDGESLICE_H
-#define POCKETEDGESLICE_H
+#ifndef EDGESLICE_H
+#define EDGESLICE_H
 
 #include "Slice.h"
 
-class PocketEdgeSlice : public Slice
+class EdgeSlice : public Slice
 {
 
 public:
 
-  PocketEdgeSlice(TopoDS_Edge edge, bool performNow = true,
-    double baseTol = 1e-3);
+  EdgeSlice(TopoDS_Edge edge, bool performNow = true,
+    double baseTol = 1e-3, double alphaVertical = 0);
 
   virtual TopoDS_Shape shape();
 
@@ -23,7 +23,8 @@ private:
     std::list<gp_Pnt>& points, std::list<double>& alphas);
   void performBaseTessilation(std::list<double>& params,
     std::list<gp_Pnt>& points);
+  double alphaVertical;
 
 };
 
-#endif//POCKETEDGESLICE_H
+#endif//EDGESLICE_H

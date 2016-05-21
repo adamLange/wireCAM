@@ -8,7 +8,7 @@
 #include "BRep_Tool.hxx"
 #include "TopoDS.hxx"
 //#include "Slice.h"
-#include "PocketEdgeSlice.h"
+#include "EdgeSlice.h"
 #include "PocketCornerSlice.h"
 #include <iostream>
 #include <cmath>
@@ -84,7 +84,7 @@ PathTree::calculate()
   TopExp_Explorer exp;
   for (exp.Init(wire,TopAbs_EDGE);exp.More();exp.Next())
   {
-    Slice* e = new PocketEdgeSlice(TopoDS::Edge(exp.Current()),true,1e-3);
+    Slice* e = new EdgeSlice(TopoDS::Edge(exp.Current()),true,1e-3);
     slices.emplace_back(e);
   }
   //Cut corners
