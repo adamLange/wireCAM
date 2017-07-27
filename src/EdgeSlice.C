@@ -95,7 +95,7 @@ EdgeSlice::calc(std::list<double>& params,
     curve->D1(*param,pnt,tang);
     tang.Normalize();
     points.push_back(pnt);
-    if ( ( tang.Y() < 1e-6 ) && (tang.X() < 1e-6) )
+    if ( ( std::abs(tang.Y()) < 1e-6 ) && (std::abs(tang.X()) < 1e-6) )
     {
       alphaPushBack(alphaVertical);
     }

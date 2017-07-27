@@ -3,6 +3,7 @@
 #include "Slice.h"
 #include "Pocket.h"
 #include "Slice3D.h"
+#include "EdgeSlice.h"
 #include "RoundWireSlice.h"
 #include "WorkingBoxSplitter.h"
 #include "AlphaJumpMarker.h"
@@ -41,12 +42,8 @@ TemplateEngine::run()
   if ((root["class"]=="SquareWireCarve")
      |(root["class"]=="RoundWireCarve"))
   {
-
-    //std::cout<<root["file"]<<std::endl;
-    //Json::StyledWriter writer;//debug
-    //std::cout<<writer.write(root)<<std::endl;
-    TargetSurface surf(root["file"].asString());
     std::list<TopoDS_Edge> edges;
+    TargetSurface surf(root["file"].asString());
     for (Json::ValueIterator it = root["slices"].begin();
          it != root["slices"].end();
          ++it)
@@ -231,7 +228,6 @@ TemplateEngine::run()
     string gcodeFile = root["output"]["machineCode"].asString();
 
     ofstream outFile(gcodeFile);
-    //std::string str = pp.postProcess(slices);
     outFile << pp.postProcess(slices);
     outFile.close();
 
@@ -293,6 +289,197 @@ TemplateEngine::run()
     bt.Write(comp,geomFile);
     geomFile.close();
   } //make transitions
+
+  if ((root["class"]=="EdgeSlice"))
+  {
+    std::list<TopoDS_Edge> edges;
+
+    BRepTools bt;
+    BRep_Builder bb;
+    TopoDS_Shape shape;
+    std::string filepath = root["file"].asString();
+
+    bt.Read(shape,filepath.c_str(),bb);
+    TopExp_Explorer exp;
+    TopoDS_Compound comp;
+    bb.MakeCompound(comp);
+    for (exp.Init(shape,TopAbs_EDGE);exp.More();exp.Next())
+    {
+      TopoDS_Edge e = TopoDS::Edge(exp.Current());
+      edges.push_back(e);
+    }
+
+    std::cout<< "Creating slices..." << std::endl;
+
+    std::list<std::unique_ptr<Slice>> slices;
+
+    double alphaVertical = root["alphaVertical"].asFloat();
+    for (std::list<TopoDS_Edge>::iterator edge_it = edges.begin();
+         edge_it != edges.end();
+         ++edge_it)
+    {
+        slices.emplace_back(new EdgeSlice(*edge_it,true,1e-3,alphaVertical));
+    }
+
+    std::cout<<"  "<<slices.size()<<" slices created"<< std::endl;
+
+    std::cout<<"Applying slice modification operations..."<<std::endl;
+    for (Json::ValueIterator it = root["operations"].begin();
+         it != root["operations"].end();
+         ++it)
+    {
+      std::string opType = (*it)["class"].asString();
+
+      if (opType == "WorkingBoxSplitter")
+      {
+        std::list<std::unique_ptr<Slice>> newSlices;
+        std::cout<<"  WorkingBoxSplitter"<< std::endl;
+        WorkingBoxSplitter wbs;
+        double x0 = (*it)["xMin"].asFloat();
+        double y0 = (*it)["yMin"].asFloat();
+        double z0 = (*it)["zMin"].asFloat();
+        double x1 = (*it)["xMax"].asFloat();
+        double y1 = (*it)["yMax"].asFloat();
+        double z1 = (*it)["zMax"].asFloat();
+        wbs.setWorkingBox(x0,y0,z0,x1,y1,z1);
+        for (std::list<std::unique_ptr<Slice>>::iterator
+             slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          std::list<std::unique_ptr<Slice>> dbgSlices = (*slice_it)->split(wbs);
+          newSlices.splice(newSlices.end(),dbgSlices);
+        }
+        int initSize = slices.size();
+        slices = std::move(newSlices);
+        std::cout<<"    "<<initSize<<"->"<<slices.size()<<" slices"<< std::endl;
+      }
+
+      else if (opType == "NormalCrossingHorizontalMarker")
+      {
+        std::cout<<"  NormalCrossingHorizontalMarker"<<std::endl;
+        NormalCrossingHorizontalMarker nchm;
+        nchm.setMaxDz((*it)["maxDz"].asFloat());
+        for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          long initSize = (*slice_it)->params.size();
+          (*slice_it)->refine(nchm);
+          long finalSize = (*slice_it)->params.size();
+          std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
+        }
+      }
+      else if (opType == "SurfaceNormalSplitter")
+      {
+        std::cout<<"  SurfaceNormalSplitter"<<std::endl;
+        SurfaceNormalSplitter sns;
+        std::list<std::unique_ptr<Slice>> newSlices;
+        double x0 = (*it)["xMin"].asFloat();
+        double y0 = (*it)["yMin"].asFloat();
+        double z0 = (*it)["zMin"].asFloat();
+        double x1 = (*it)["xMax"].asFloat();
+        double y1 = (*it)["yMax"].asFloat();
+        double z1 = (*it)["zMax"].asFloat();
+        sns.setXLimits(x0,x1);
+        sns.setYLimits(y0,y1);
+        sns.setZLimits(z0,z1);
+        for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          newSlices.splice(newSlices.end(),(*slice_it)->split(sns));
+        }
+        int size_i = slices.size();
+        slices = std::move(newSlices);
+        int size_f = slices.size();
+        std::cout<<"    "<<size_i<<" -> "<<size_f<<std::endl;
+      }
+      else if (opType == "TraverseAngleSplitter")
+      {
+        std::cout<<"  TraverseAngleSplitter"<<std::endl;
+        std::list<std::unique_ptr<Slice>> newSlices;
+        TraverseAngleSplitter tas;
+        double alpha = (*it)["maxTraverseAngle"].asFloat()*M_PI/180.0;
+        tas.setMaxTraverseAngle(alpha);
+        for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          newSlices.splice(newSlices.end(),(*slice_it)->split(tas));
+        }
+        int size_i = slices.size();
+        slices = std::move(newSlices);
+        int size_f = slices.size();
+        std::cout<<"    "<<size_i<<" -> "<<size_f<<std::endl;
+      }
+      else if (opType == "AlphaJumpMarker")
+      {
+        std::cout<<"  AlphaJumpMarker"<<std::endl;
+        AlphaJumpMarker ajm;
+        double j = (*it)["maxAlphaJump"].asFloat()*M_PI/180.0;
+        ajm.setMaxAlphaJump(j);
+        for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          long initSize = (*slice_it)->params.size();
+          (*slice_it)->refine(ajm);
+          long finalSize = (*slice_it)->params.size();
+          std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
+        }
+      }
+      else if (opType == "PointToPointDistanceMarker")
+      {
+        std::cout<<"  PointToPointDistanceMarker"<<std::endl;
+        PointToPointDistanceMarker p2pdm;
+        double d = (*it)["maxDistance"].asFloat();
+        p2pdm.setMaxDistance(d);
+        for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+             slice_it != slices.end();
+             ++slice_it)
+        {
+          long initSize = (*slice_it)->params.size();
+          (*slice_it)->refine(p2pdm);
+          long finalSize = (*slice_it)->params.size();
+          std::cout<<"    "<<initSize<<" -> "<<finalSize<<std::endl;
+        }
+      }
+      else
+      {
+        std::cout<<"Warning: skipping unsupported operation of class: "<<
+          opType << std::endl;
+      }
+
+    }
+
+    double lScale = root["postProcessor"]["linearScale"].asFloat();
+    double aScale = root["postProcessor"]["angularScale"].asFloat();
+    double rapidZ = root["postProcessor"]["rapidZ"].asFloat();
+
+    PostProcessor pp(rapidZ,lScale,aScale);
+
+    string gcodeFile = root["output"]["machineCode"].asString();
+
+    ofstream outFile(gcodeFile);
+    outFile << pp.postProcess(slices);
+    outFile.close();
+
+    TopoDS_Compound outShape;
+    BRep_Builder builder;
+    builder.MakeCompound(outShape);
+    for (std::list<std::unique_ptr<Slice>>::iterator slice_it = slices.begin();
+           slice_it != slices.end();
+           ++slice_it)
+    {
+      builder.Add(outShape,(*slice_it)->shape());
+    }
+
+    string geomFileName = root["output"]["geometry"].asString();
+    ofstream geomFile(geomFileName);
+    bt.Write(outShape,geomFile);
+    geomFile.close();
+  }
 
   return;
 }
